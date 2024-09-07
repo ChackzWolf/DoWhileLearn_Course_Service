@@ -1,22 +1,28 @@
-// s3Service.js
-const AWS = require('aws-sdk');
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import dotenv from 'dotenv';
 
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY,
-  secretAccessKey: process.env.AWS_SECRET_KEY,
-  region: process.env.AWS_REGION,
-});
+dotenv.config();
 
+const s3Client = new S3Client({ region: 'eu-north-1' });
 
+export const uploadFile = async (params: any) => {
+  try {
+    const command = new PutObjectCommand(params);
+    await s3Client.send(command);
+    console.log('File uploaded successfully:', params.Key);
+    
+    // Generate the pre-signed URL
+    const getObjectParams = {
+      Bucket: params.Bucket, 
+      Key: params.Key
+    };
 
-export const uploadFile = (file:any, bucketName:string) => {
-  const params = {
-    Bucket: bucketName,
-    Key: file.originalname,
-    Body: file.buffer,
-    ContentType: file.mimetype,
-  };
-
-  return s3.upload(params).promise();
+    const url = await getSignedUrl(s3Client, new GetObjectCommand(getObjectParams), { expiresIn: 3600 }); // URL expires in 1 hour
+    console.log('Pre-signed URL:', url);
+    
+    return { url }; // Return URL or additional info as needed
+  } catch (err) {
+    throw new Error(`Failed to upload file: ${err}`);
+  }
 };
-

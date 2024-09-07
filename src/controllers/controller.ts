@@ -8,9 +8,10 @@ export class courseController {
 
     async upload(call: any, callback: any) {
         try {
+            console.log(call.request.videoBinary,' call from controller');
+
             const data = call.request;
             const response = courseService.uploadVideo(data)
-            console.log(call,' call from controller');
 
 
         } catch (err) {

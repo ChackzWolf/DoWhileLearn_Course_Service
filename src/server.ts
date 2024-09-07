@@ -18,7 +18,9 @@ const packageDefinition = protoLoader.loadSync(
 
 const courseProto = grpc.loadPackageDefinition(packageDefinition) as any;
 
-const server = new grpc.Server()
+const server = new grpc.Server({
+    'grpc.max_receive_message_length': 100 * 1024 * 1024, // 100 MB
+})
 
 const grpcServer = () => {
     server.bindAsync(
@@ -29,9 +31,10 @@ const grpcServer = () => {
                 console.log(err, "Error happened grpc course service.");
                 return;
             }else{
-                console.log("gRPC course server started on port", port);
+                console.log("gRPC course server started on port", port);   
             }
-        }
+        },
+
     )
 }
 
@@ -45,21 +48,7 @@ grpcServer()
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post('/upload-video', upload.single('video'), async (req:any, res:any) => {
-  try {
-    const file = req.file;
-    const bucketName = 'your-bucket-name';
 
-    if (!file) {
-      return res.status(400).send('No file uploaded');
-    }
-
-    const result = await uploadFile(file, bucketName);
-    res.status(200).send({ url: result.Location });
-  } catch (err: any) {
-    res.status(500).send(err.message);
-  }
-});
 
 module.exports = router;
 
