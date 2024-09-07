@@ -17,9 +17,13 @@
     "@aws-sdk/client-s3": "^3.645.0",
     "@aws-sdk/client-sns": "^3.645.0",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "@aws-sdk/s3-request-presigner": "^3.645.0",
 =======
 >>>>>>> 5502ccc (file setup)
+=======
+    "@aws-sdk/s3-request-presigner": "^3.645.0",
+>>>>>>> a7c1158 (Video succesfully uploaded)
     "@grpc/grpc-js": "^1.11.1",
     "@grpc/proto-loader": "^0.7.13",
     "aws-sdk": "^2.1689.0",
