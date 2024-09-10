@@ -5,8 +5,8 @@ import dotenv from "dotenv";
 import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import path from "path";
-import { uploadFile } from "./Configs/DB.configs/s3";
 import { courseController } from "./controllers/controller";
+import { connectDB } from "./Configs/DB.configs/mongoDB";
 
 dotenv.config()
 
@@ -20,7 +20,7 @@ const courseProto = grpc.loadPackageDefinition(packageDefinition) as any;
 
 <<<<<<< HEAD
 const server = new grpc.Server({
-    'grpc.max_receive_message_length': 100 * 1024 * 1024, // 100 MB
+    'grpc.max_receive_message_length': 1 * 1024 * 1024 * 1024 // 1 GB
 })
 =======
 const server = new grpc.Server()
@@ -49,8 +49,10 @@ const grpcServer = () => {
 }
 
 grpcServer()
+connectDB()
 
 
+<<<<<<< HEAD
 
 
 
@@ -80,8 +82,11 @@ router.post('/upload-video', upload.single('video'), async (req:any, res:any) =>
 
 module.exports = router;
 
+=======
+>>>>>>> ff16e4a (aws bug solved , image thumbnail set)
 const controller = new courseController()
 
 server.addService(courseProto.CourseService.service, {
-    UploadVideo: controller.upload,
+    UploadVideo: controller.uploadVideo,
+    UploadImage: controller.uploadImage,
 })
