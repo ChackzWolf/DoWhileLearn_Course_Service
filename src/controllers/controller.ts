@@ -20,11 +20,8 @@ export class courseController {
     }
 
     async uploadImage( call: any, callback: any){
-        console.log(call.request ,' call from controller');
         const data = call.request;
-        // const response = await courseService.uploadImage(data);
-        // console.log('k,,kjskdlfsdkjf')
-        // console.log('giving response', response)
-        // callback(null,response);
+        const response = await courseService.uploadImage(data);
+        callback(null,response);
     }
 }    
