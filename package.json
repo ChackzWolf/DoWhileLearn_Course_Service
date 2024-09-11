@@ -4,10 +4,10 @@
   "main": "src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node src/server.ts",
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
     "build": "tsc",
-    "lint": "eslint . --ext .ts"
+    "lint": "tslint -c tslint.json src/**/*.ts",
+    "prepublish": "npm run build",
+    "start": "nodemon --exec ts-node src/server.ts"
   },
   "author": "",
   "license": "ISC",
@@ -16,14 +16,7 @@
     "@aws-sdk/client-dynamodb": "^3.645.0",
     "@aws-sdk/client-s3": "^3.645.0",
     "@aws-sdk/client-sns": "^3.645.0",
-<<<<<<< HEAD
-<<<<<<< HEAD
     "@aws-sdk/s3-request-presigner": "^3.645.0",
-=======
->>>>>>> 5502ccc (file setup)
-=======
-    "@aws-sdk/s3-request-presigner": "^3.645.0",
->>>>>>> a7c1158 (Video succesfully uploaded)
     "@grpc/grpc-js": "^1.11.1",
     "@grpc/proto-loader": "^0.7.13",
     "aws-sdk": "^2.1689.0",
