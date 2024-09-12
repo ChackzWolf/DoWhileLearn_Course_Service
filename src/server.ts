@@ -41,8 +41,8 @@ const grpcServer = () => {
     )
 }
 
-grpcServer()
-// connectDB()
+grpcServer() 
+connectDB()
 
 
 const router = express.Router();
@@ -54,4 +54,6 @@ const controller = new courseController()
 server.addService(courseProto.CourseService.service, {
     UploadVideo: controller.uploadVideo,
     UploadImage: controller.uploadImage,
+    SubmitCourse: controller.uploadCourse,
+    FetchCourse: controller.fetchCourse,
 })

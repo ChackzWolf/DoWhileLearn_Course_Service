@@ -31,7 +31,7 @@ export const uploadFile = async (videoBinary: any) => {
   } catch (err: any) {
     throw new Error(`Failed to upload file: ${err.message}`);
   }
-};
+}; 
 
 export const uploadImage = async (imageBinary: Buffer, imageName: string) => {
   // Determine the content type based on the file extension

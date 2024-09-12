@@ -1,6 +1,9 @@
 import { uploadFile, uploadImage } from "../Configs/DB.configs/s3";
 import dotenv from "dotenv";
+import CourseRepository from "../Repository/courseRepositories"
 dotenv.config();
+
+const repository = new CourseRepository()
 
 export class CourseService {
     
@@ -37,4 +40,29 @@ export class CourseService {
             }
         }
     }
+    
+    async uploadCourse(data:any){
+        try{
+            console.log(data, 'data form service')
+            const uploadData = await repository.createCourse(data);
+            console.log(uploadData, 'uploaded data ');
+            return {success: true, message: "Course succesfully uploaded."}
+        }catch(error){
+            console.error('An unknown error occurred:', error);
+            return { success:false, message: 'Course upload failed:  error' };
+        }
+    }
+
+    async fetchCourse(){
+        try {
+            console.log('trig')
+            const fetchCourse = await repository.getCourses();
+            console.log(fetchCourse, "fetched course ")
+            return fetchCourse
+        } catch (error) {
+            console.error("An unknown error occured: ", error );    
+            return { success: false, message: "Course fetch error"}
+        }
+    }
 }
+ 
