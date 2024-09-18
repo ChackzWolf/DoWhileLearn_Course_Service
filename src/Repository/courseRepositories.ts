@@ -106,7 +106,12 @@ class CourseRepository {
       })),
     };
     return formattedCourses;
+  }
 
+  async findCourseById(courseId:string) {
+    const courseDetails = await Course.findById(courseId)
+    console.log(courseDetails,' course details from repo')
+    return courseDetails;
   }
 }
 

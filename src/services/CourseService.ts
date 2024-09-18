@@ -74,5 +74,16 @@ export class CourseService {
             return { success: false };
         }
     }
+
+    async fetchCourseDetails(data:{id:string}){
+        try{
+            const courseDetails = await repository.findCourseById(data.id);
+            console.log(courseDetails, 'course detsils in usecAse')
+            return  courseDetails;
+
+        }catch(error){
+            console.log(error)
+        }
+    }
 }
  

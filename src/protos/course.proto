@@ -6,6 +6,10 @@ service CourseService {
   rpc SubmitCourse(SubmitCourseRequest) returns (SubmitCourseResponse);
   rpc FetchCourse(emptyRequest) returns (ResponseFetchCourseList);
   rpc FetchTutorCourse(RequestFetchTutorCourse) returns (ResponseFetchCourseList);
+  rpc FetchCourseDetails(RequestFetchCourseDetails) returns (ResponseFetchCourse);
+}
+message RequestFetchCourseDetails {
+  string id = 1;
 }
 
 message RequestFetchTutorCourse {

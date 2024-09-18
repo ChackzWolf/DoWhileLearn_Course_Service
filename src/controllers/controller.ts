@@ -48,4 +48,12 @@ export class courseController {
         console.log(response, "rsponse");
         callback(null, response.courses)
     }
+
+    async fetchCourseDetails( call: any, callback:any){
+        console.log("trig")
+        const data = call.request;
+        console.log(data, 'data on controller')
+        const response = await courseService.fetchCourseDetails(data)
+        callback(null,response);
+    }
 }      
