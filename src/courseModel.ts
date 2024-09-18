@@ -44,6 +44,10 @@ const BenefitsPrerequisitesSchema = new Schema({
 
 // Create schema for Course
 const CourseSchema = new Schema({
+  tutorId: {
+    type:String,
+    required: true
+  },
   courseCategory: {
     type: String,
     required: true
@@ -63,7 +67,7 @@ const CourseSchema = new Schema({
   courseTitle: {
     type: String,
     required: true
-  },
+  }, 
   demoURL: {
     type: String,
     required: true

@@ -1,6 +1,6 @@
 import { uploadFile, uploadImage } from "../Configs/DB.configs/s3";
 import dotenv from "dotenv";
-import CourseRepository from "../Repository/courseRepositories"
+import CourseRepository, { CourseDetails, ResponseFetchCourseList } from "../Repository/courseRepositories"
 dotenv.config();
 
 const repository = new CourseRepository()
@@ -52,7 +52,7 @@ export class CourseService {
             return { success:false, message: 'Course upload failed:  error' };
         }
     }
-
+ 
     async fetchCourse(){
         try {
             console.log('trig')
@@ -62,6 +62,16 @@ export class CourseService {
         } catch (error) {
             console.error("An unknown error occured: ", error );    
             return { success: false, message: "Course fetch error"}
+        }
+    }
+
+    async fetchTutorCourses(data:{tutorId:string}): Promise<{ success: boolean, courses?: ResponseFetchCourseList}> {
+        try {
+            const courses = await repository.fetchTutorCourses(data.tutorId);
+            console.log(courses, 'courses forms service')
+            return { success: true, courses }; // Courses should match ResponseFetchCourseList type
+        } catch (error) {
+            return { success: false };
         }
     }
 }

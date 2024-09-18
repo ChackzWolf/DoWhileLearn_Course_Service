@@ -17,7 +17,7 @@ interface BenefitsPrerequisites {
   prerequisites: string[];
 }
 
-interface CourseDetails {
+ export interface CourseDetails {
   courseCategory: string;
   courseDescription: string;
   courseLevel: string;
@@ -30,7 +30,7 @@ interface CourseDetails {
   Modules: Module[];
 }
 
-interface ResponseFetchCourseList {
+export interface ResponseFetchCourseList {
   courses: CourseDetails[];
 }
 
@@ -74,6 +74,39 @@ class CourseRepository {
     };
 
     return formattedCourses;
+  }
+
+  async fetchTutorCourses(tutorId:string):Promise<ResponseFetchCourseList>{
+    console.log(tutorId, 'tutorId')
+    const fetchCourse = await Course.find({ tutorId })
+    const formattedCourses: ResponseFetchCourseList = {
+      courses: fetchCourse.map((course: any) => ({
+        _id:course._id,
+        courseCategory: course.courseCategory,
+        courseDescription: course.courseDescription,
+        courseLevel: course.courseLevel,
+        coursePrice: course.coursePrice,
+        courseTitle: course.courseTitle,
+        demoURL: course.demoURL,
+        discountPrice: course.discountPrice,
+        thumbnail: course.thumbnail,
+        benefits_prerequisites: {
+          benefits: course.benefits_prerequisites.benefits,
+          prerequisites: course.benefits_prerequisites.prerequisites,
+        },
+        Modules: course.Modules.map((module: any) => ({
+          name: module.name,
+          description: module.description,
+          lessons: module.lessons.map((lesson: any) => ({
+            title: lesson.title,
+            video: lesson.video,
+            description: lesson.description,
+          })),
+        })),
+      })),
+    };
+    return formattedCourses;
+
   }
 }
 
