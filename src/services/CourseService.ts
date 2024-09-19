@@ -1,11 +1,13 @@
 import { uploadFile, uploadImage } from "../Configs/DB.configs/s3";
 import dotenv from "dotenv";
-import CourseRepository, { CourseDetails, ResponseFetchCourseList } from "../Repository/courseRepositories"
+import  { CourseDetails, ResponseFetchCourseList } from "../interface/ICourse.repository"
+import CourseRepository from '../Repository/courseRepositories'
+import { ICourseUseCase } from "../interface/ICourse.Use.case";
 dotenv.config();
 
 const repository = new CourseRepository()
 
-export class CourseService {
+export class CourseService implements ICourseUseCase {
     
     async uploadVideo(data: any) {
           

@@ -34,7 +34,7 @@ const grpcServer = () => {
                 return;
             }else{
 
-                console.log("gRPC course server started on port", port);   
+                console.log("COURSE_SERVICE running on port", port);   
             }
         },
 
