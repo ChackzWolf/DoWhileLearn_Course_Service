@@ -80,6 +80,9 @@ const CourseSchema = new Schema({
     type: String,
     required: true
   },
+  purchasedUsers: [{
+    type: Schema.Types.ObjectId,
+}],
   benefits_prerequisites: BenefitsPrerequisitesSchema,
   Modules: [ModuleSchema]  // Array of modules
 });

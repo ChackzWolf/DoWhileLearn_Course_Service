@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import path from "path";
-import { courseController } from "./controllers/controller";
+import { courseController } from "./Controllers/Course.controller";
 import { connectDB } from "./Configs/DB.configs/mongoDB";
 
 dotenv.config()
@@ -55,7 +55,10 @@ server.addService(courseProto.CourseService.service, {
     UploadVideo: controller.uploadVideo,
     UploadImage: controller.uploadImage,
     SubmitCourse: controller.uploadCourse,
+    EditCourse: controller.editCourse,
     FetchCourse: controller.fetchCourse,
     FetchTutorCourse: controller.fetchTutorCourses,
-    FetchCourseDetails: controller.fetchCourseDetails
+    FetchCourseDetails: controller.fetchCourseDetails,
+    AddPurchasedUsers: controller.addToPurchasedList,
+    GetCourseInCart: controller.getCoursesByIds
 })

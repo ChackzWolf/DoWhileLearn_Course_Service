@@ -4,10 +4,28 @@ service CourseService {
   rpc UploadVideo(VideoRequest) returns (VideoResponse);
   rpc UploadImage(ImageRequest) returns (ImageResponse);
   rpc SubmitCourse(SubmitCourseRequest) returns (SubmitCourseResponse);
+  rpc EditCourse(SubmitCourseRequest) returns (SubmitCourseResponse);
   rpc FetchCourse(emptyRequest) returns (ResponseFetchCourseList);
   rpc FetchTutorCourse(RequestFetchTutorCourse) returns (ResponseFetchCourseList);
   rpc FetchCourseDetails(RequestFetchCourseDetails) returns (ResponseFetchCourse);
+  rpc AddPurchasedUsers(AddPurchasedUsersRequest) returns (AddPurchasedUsersResponse);
+  rpc GetCourseInCart(GetCourseInCartRequest) returns (ResponseFetchCourseList);
 }
+
+message GetCourseInCartRequest {
+  repeated string courseIds = 1;
+}
+message AddPurchasedUsersRequest {
+    string courseId = 1;
+    string userId = 2;
+}
+
+message AddPurchasedUsersResponse {
+    bool success = 1;
+    string message = 2;
+    bool status = 3;
+}
+
 message RequestFetchCourseDetails {
   string id = 1;
 }
@@ -56,6 +74,7 @@ message ResponseFetchCourse {
   BenefitsPrerequisites benefits_prerequisites = 9;
   repeated Module Modules = 10;
   string _id = 11;
+  string tutorId = 12;
 }
 
 
@@ -74,6 +93,7 @@ message SubmitCourseRequest {
   string thumbnail = 9;
   BenefitsPrerequisites benefits_prerequisites = 10;
   repeated Module Modules = 11;
+  string courseId = 12;
 }
 
 

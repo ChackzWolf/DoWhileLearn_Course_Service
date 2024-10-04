@@ -1,9 +1,11 @@
 import { uploadFile, uploadImage } from "../Configs/DB.configs/s3";
 import dotenv from "dotenv";
-import  { CourseDetails, ResponseFetchCourseList } from "../interface/ICourse.repository"
-import CourseRepository from '../Repository/courseRepositories'
-import { ICourseUseCase } from "../interface/ICourse.Use.case";
+import  { CourseDetails, ResponseFetchCourseList } from "../Interfaces/ICourse.repository"
+import CourseRepository from '../Repository/Course.repository'
+import { ICourseUseCase } from "../Interfaces/ICourse.Use.case";
+import { StatusCode } from "../Interfaces/enums";
 dotenv.config();
+ 
 
 const repository = new CourseRepository()
 
@@ -54,12 +56,22 @@ export class CourseService implements ICourseUseCase {
             return { success:false, message: 'Course upload failed:  error' };
         }
     }
+
+    async updateCourse(data:any){
+        try{
+            console.log(data, 'data to update form service') 
+            const uploadData = await repository.updateCourse(data);
+            console.log(uploadData, 'uploaded data ');
+            return {success: true, message: "Course succesfully updated."}
+        }catch(error){
+            console.error('An unknown error occurred:', error);
+            return { success:false, message: 'Course update failed:  error' };
+        }
+    } 
  
     async fetchCourse(){
         try {
-            console.log('trig')
-            const fetchCourse = await repository.getCourses();
-            console.log(fetchCourse, "fetched course ")
+            const fetchCourse = await repository.getCourses(); 
             return fetchCourse
         } catch (error) {
             console.error("An unknown error occured: ", error );    
@@ -70,7 +82,6 @@ export class CourseService implements ICourseUseCase {
     async fetchTutorCourses(data:{tutorId:string}): Promise<{ success: boolean, courses?: ResponseFetchCourseList}> {
         try {
             const courses = await repository.fetchTutorCourses(data.tutorId);
-            console.log(courses, 'courses forms service')
             return { success: true, courses }; // Courses should match ResponseFetchCourseList type
         } catch (error) {
             return { success: false };
@@ -85,6 +96,33 @@ export class CourseService implements ICourseUseCase {
 
         }catch(error){
             console.log(error)
+        }
+    }
+
+    async addToPurchasedList (data:{userId:string,courseId:string}){
+        try {
+            console.log(data)
+            const response = await repository.addToPurchaseList(data.userId,data.courseId);
+            console.log(response)
+            if(response.success){
+                return {message:response.message, success: true, status: StatusCode.Created}
+            }else{
+                return {message: "error creating order", success: false, status: StatusCode.NotFound}
+            }
+        } catch (error) {
+            console.log(error)
+            return {message :"Error occured while creating order", success: false , status: StatusCode.ExpectationFailed }
+        }
+    }
+
+    async getCoursesByIds(data:{courseIds:string[]}){
+        try {
+            console.log(data, 'ddata form useCase')
+            const courses = await repository.getCoursesByIds(data.courseIds);
+            console.log(courses)
+            return { success: true, courses }; // Courses should match ResponseFetchCourseList type
+        } catch (error) {
+            
         }
     }
 }

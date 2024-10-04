@@ -1,4 +1,4 @@
-import { CourseService } from "../services/CourseService";
+import { CourseService } from "../services/Course.Use.case";
 import * as grpc from '@grpc/grpc-js';
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js';
 
@@ -35,18 +35,23 @@ export class courseController {
         callback(null, response)
     }
 
+    async editCourse (call: ServerUnaryCall <any,any>, callback: sendUnaryData<any>): Promise<void>{
+        const data = call.request;
+        console.log(data, 'data from controller')
+        const response = await courseService.updateCourse(data);
+        console.log(response, 'response from controller')
+        callback(null, response);
+    }
     async fetchCourse(call: ServerUnaryCall<any,any>, callback: sendUnaryData<any>): Promise<void>{
         const response = await courseService.fetchCourse();
-        console.log(response, "from contoller")
-        callback(null, response);
+        console.log(response, 'resonsesss')
+        callback(null, response); 
     }
 
     async fetchTutorCourses(call: ServerUnaryCall<any,any>, callback: sendUnaryData<any>): Promise<void>{
         console.log("trig")
         const data = call.request;
-        console.log(data, 'from controller')
         const response = await courseService.fetchTutorCourses(data)
-        console.log(response, "rsponse");
         callback(null, response.courses)
     }
 
@@ -57,4 +62,29 @@ export class courseController {
         const response = await courseService.fetchCourseDetails(data)
         callback(null,response);
     }
-}      
+
+    async addToPurchasedList(call:grpc.ServerUnaryCall<any, any>, callback:grpc.sendUnaryData<any>):Promise<void>{
+        try {
+            const data= call.request
+            const response = await courseService.addToPurchasedList(data)
+            console.log(response,'response from controller');
+            callback(null,response)
+        } catch (err) {
+            callback(err as grpc.ServiceError);
+        }
+    }
+
+    async getCoursesByIds(call:grpc.ServerUnaryCall<any, any>, callback:grpc.sendUnaryData<any>):Promise<void>{
+        try{
+            console.log('trig')
+            const data= call.request
+            const response = await courseService.getCoursesByIds(data)
+            console.log(response?.courses, 'resonsesss')
+            if(response){
+                callback(null, response.courses);
+            }
+        }catch(error){
+
+        }
+    }
+}        

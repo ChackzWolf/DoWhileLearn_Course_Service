@@ -6,7 +6,6 @@ const connectDB = async () => {
     if (!process.env.MONGODB_URL_COURSE) {
       throw new Error("MONGO_URI is not defined in the environment variables");
     }
-    console.log(process.env.MONGODB_URL_COURSE)
 
     await mongoose.connect(process.env.MONGODB_URL_COURSE);
     console.log("Course Service Database connected");
