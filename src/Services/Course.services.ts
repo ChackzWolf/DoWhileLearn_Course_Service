@@ -1,17 +1,32 @@
-import { uploadFile, uploadImage } from "../Configs/DB.configs/s3";
+import { uploadFile, uploadImage } from "../Configs/S3/s3";
 import dotenv from "dotenv";
-import  { CourseDetails, ResponseFetchCourseList } from "../Interfaces/ICourse.repository"
-import CourseRepository from '../Repository/Course.repository'
-import { ICourseUseCase } from "../Interfaces/ICourse.Use.case";
-import { StatusCode } from "../Interfaces/enums";
+import CourseRepository from '../Repositories/Course.repository'
+import { ICourseUseCase } from "../Interfaces/IServices/IService.interfaces";
+import { StatusCode } from "../Interfaces/Enums/enums";
+import {
+    UploadVideoDTO,
+    UploadVideoResponseDTO,
+    UploadImageDTO,
+    UploadImageResponseDTO,
+    UpdateCourseDTO,
+    UploadCourseResponseDTO,
+    FetchCourseResponseDTO,
+    FetchTutorCoursesDTO,
+    FetchTutorCoursesResponseDTO,
+    FetchCourseDetailsDTO,
+    FetchCourseDetailsResponseDTO,
+    AddToPurchasedListDTO,
+    AddToPurchasedListResponseDTO,
+    GetCoursesByIdsDTO,
+    GetCoursesByIdsResponseDTO,
+} from '../Interfaces/DTOs/IService.dto'
 dotenv.config();
  
 
 const repository = new CourseRepository()
 
 export class CourseService implements ICourseUseCase {
-    
-    async uploadVideo(data: any) {
+    async uploadVideo(data: UploadVideoDTO): Promise<UploadVideoResponseDTO> {
           
         try {
             console.log(data, 'dataaa');
@@ -30,7 +45,7 @@ export class CourseService implements ICourseUseCase {
         }
     }
 
-    async uploadImage(data: any):Promise<{ success:boolean; message: string, s3Url?: string }> {
+    async uploadImage(data: UploadImageDTO): Promise<UploadImageResponseDTO> {
         try{
             const response = await uploadImage(data.imageBinary,data.imageName)
             return {message: "Image uploaded successfully.", s3Url: response.publicUrl, success:true};
@@ -45,7 +60,7 @@ export class CourseService implements ICourseUseCase {
         }
     }
     
-    async uploadCourse(data:any){
+    async uploadCourse(data: UpdateCourseDTO): Promise<UploadCourseResponseDTO>{
         try{
             console.log(data, 'data form service')
             const uploadData = await repository.createCourse(data);
@@ -57,7 +72,7 @@ export class CourseService implements ICourseUseCase {
         }
     }
 
-    async updateCourse(data:any){
+    async updateCourse(data: UpdateCourseDTO): Promise<UploadCourseResponseDTO>{
         try{
             console.log(data, 'data to update form service') 
             const uploadData = await repository.updateCourse(data);
@@ -69,7 +84,7 @@ export class CourseService implements ICourseUseCase {
         }
     } 
  
-    async fetchCourse(){
+    async fetchCourse(): Promise<FetchCourseResponseDTO >{
         try {
             const fetchCourse = await repository.getCourses(); 
             return fetchCourse
@@ -79,27 +94,28 @@ export class CourseService implements ICourseUseCase {
         }
     }
 
-    async fetchTutorCourses(data:{tutorId:string}): Promise<{ success: boolean, courses?: ResponseFetchCourseList}> {
+    async fetchTutorCourses(data: FetchTutorCoursesDTO): Promise<FetchTutorCoursesResponseDTO> {
         try {
             const courses = await repository.fetchTutorCourses(data.tutorId);
-            return { success: true, courses }; // Courses should match ResponseFetchCourseList type
+            return { success: true,courses: courses.courses }; // Courses should match ResponseFetchCourseList type
         } catch (error) {
             return { success: false };
         }
     }
 
-    async fetchCourseDetails(data:{id:string}){
+    async fetchCourseDetails(data: FetchCourseDetailsDTO): Promise<FetchCourseDetailsResponseDTO>{
         try{
             const courseDetails = await repository.findCourseById(data.id);
-            console.log(courseDetails, 'course detsils in usecAse')
-            return  courseDetails;
+            console.log(courseDetails, 'Course details from')
+            return  { courseDetails };
 
         }catch(error){
             console.log(error)
+            return {courseDetails : undefined}
         }
     }
 
-    async addToPurchasedList (data:{userId:string,courseId:string}){
+    async addToPurchasedList(data: AddToPurchasedListDTO): Promise<AddToPurchasedListResponseDTO> {
         try {
             console.log(data)
             const response = await repository.addToPurchaseList(data.userId,data.courseId);
@@ -115,14 +131,14 @@ export class CourseService implements ICourseUseCase {
         }
     }
 
-    async getCoursesByIds(data:{courseIds:string[]}){
+    async getCoursesByIds(data: GetCoursesByIdsDTO): Promise<GetCoursesByIdsResponseDTO> {
         try {
             console.log(data, 'ddata form useCase')
             const courses = await repository.getCoursesByIds(data.courseIds);
             console.log(courses)
-            return { success: true, courses }; // Courses should match ResponseFetchCourseList type
+            return { success: true, courses: courses.courses }; // Courses should match ResponseFetchCourseList type
         } catch (error) {
-            
+            return {success :false}
         }
     }
 }

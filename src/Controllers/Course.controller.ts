@@ -1,13 +1,14 @@
-import { CourseService } from "../services/Course.Use.case";
+import { CourseService } from "../Services/Course.services";
 import * as grpc from '@grpc/grpc-js';
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js';
+import { ICourseController } from "../Interfaces/IControllers/IController.interface";
+import { ImageRequest, ImageResponse, SubmitCourseRequest, SubmitCourseResponse, VideoRequest, VideoResponse } from "../Interfaces/DTOs/IController.dto";
 
 const courseService = new CourseService()
 
 
-export class courseController {
-
-    async uploadVideo(call: ServerUnaryCall<any,any>, callback: sendUnaryData<any>): Promise<void>{
+export class courseController implements ICourseController {
+    async uploadVideo(call: grpc.ServerUnaryCall<VideoRequest, VideoResponse | undefined>, callback: grpc.sendUnaryData<VideoResponse | undefined >): Promise<void> {
         try {
             console.log(call.request.videoBinary,' call from controller');
 
@@ -19,20 +20,27 @@ export class courseController {
             callback(err as grpc.ServiceError)
         } 
     }
-
-    async uploadImage(call: ServerUnaryCall<any,any>, callback: sendUnaryData<any>): Promise<void>{
-        const data = call.request; 
-        const response = await courseService.uploadImage(data);
-        callback(null,response);
+    async uploadImage(call: grpc.ServerUnaryCall<ImageRequest, ImageResponse>, callback: grpc.sendUnaryData<ImageResponse>): Promise<void> {
+        try{
+            const data = call.request; 
+            const response = await courseService.uploadImage(data);
+            callback(null,response);
+        }catch(error){
+            callback(error as grpc.ServiceError)
+        }    
     }
 
-    async uploadCourse (call: ServerUnaryCall<any,any>, callback: sendUnaryData<any>): Promise<void>{
-        const data = call.request;
-        console.log(data, 'data fro mcntorller')
-         
-        const response = await courseService.uploadCourse(data);
-        console.log(response, 'response')
-        callback(null, response)
+    async uploadCourse(call: grpc.ServerUnaryCall<SubmitCourseRequest, SubmitCourseResponse>, callback: grpc.sendUnaryData<SubmitCourseResponse>): Promise<void> {
+        try {
+            const data = call.request;
+            console.log(data, 'data fro mcntorller')
+            const response = await courseService.uploadCourse(data);
+            console.log(response, 'response')
+            callback(null, response)
+        }catch(error){
+            callback(error as grpc.ServiceError)
+        }
+
     }
 
     async editCourse (call: ServerUnaryCall <any,any>, callback: sendUnaryData<any>): Promise<void>{
@@ -52,7 +60,7 @@ export class courseController {
         console.log("trig")
         const data = call.request;
         const response = await courseService.fetchTutorCourses(data)
-        callback(null, response.courses)
+        callback(null, {courses:response.courses})
     }
 
     async fetchCourseDetails(call: ServerUnaryCall<any,any>, callback: sendUnaryData<any>): Promise<void>{
@@ -60,7 +68,8 @@ export class courseController {
         const data = call.request;
         console.log(data, 'data on controller')
         const response = await courseService.fetchCourseDetails(data)
-        callback(null,response);
+        console.log(response, response)
+        callback(null,response.courseDetails);
     }
 
     async addToPurchasedList(call:grpc.ServerUnaryCall<any, any>, callback:grpc.sendUnaryData<any>):Promise<void>{
@@ -84,7 +93,7 @@ export class courseController {
                 callback(null, response.courses);
             }
         }catch(error){
-
+            callback(error as grpc.ServiceError);
         }
     }
 }        

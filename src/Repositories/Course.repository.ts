@@ -1,12 +1,13 @@
-import { Course } from "../courseModel";
-import { ICourseRepository } from "../Interfaces/ICourse.repository"; // Adjust import path as necessary
-import { CourseDetails, ResponseFetchCourseList } from "../Interfaces/ICourse.repository"; // Adjust import path as necessary
+import { Course } from "../Schemas/Course.schema";
+import { ICourseRepository } from "../Interfaces/IRepositories/IRepository.interface"; // Adjust import path as necessary
 import mongoose from 'mongoose';
+import { ICourse } from "../Interfaces/Models/ICourse.";
+import { UpdateCourseDTO, AddToPurchaseListResponse, ResponseFetchCourseList } from "../Interfaces/DTOs/IRepository.dto";
 
 
 export default class CourseRepository implements ICourseRepository {
     // Create a course
-    async createCourse(data: any): Promise<any> {
+    async createCourse(data: UpdateCourseDTO): Promise<ICourse> {
         const createdCourse = new Course(data);
         const savedCourse = await createdCourse.save();
         console.log(savedCourse, 'saved course');
@@ -14,7 +15,7 @@ export default class CourseRepository implements ICourseRepository {
     }
 
         // Create a course
-        async updateCourse(data: any): Promise<any> {
+        async updateCourse(data: UpdateCourseDTO): Promise<ICourse> {
             const updatedCourse = await Course.findByIdAndUpdate(data.courseId, data, { new: true, runValidators: true });
             console.log(updatedCourse, 'updated course');
             return updatedCourse; 
@@ -57,14 +58,14 @@ export default class CourseRepository implements ICourseRepository {
     }
 
 
-    async findCourseById(courseId: string): Promise<any> { // Adjust return type as necessary
+    async findCourseById(courseId: string): Promise<ICourse> { // Adjust return type as necessary
         const courseDetails = await Course.findById(courseId);
         console.log(courseDetails, 'course details from repo');
         return courseDetails;
     }
 
 
-    async addToPurchaseList(userId: string, courseId: string):Promise<{message?:string, success:boolean}> {
+    async addToPurchaseList(userId: string, courseId: string):Promise<AddToPurchaseListResponse> {
         try {
           // First, check if the course is already in the cart
     
@@ -84,7 +85,7 @@ export default class CourseRepository implements ICourseRepository {
         console.log(tutorId, 'tutorId');
         const fetchCourse = await Course.find({ tutorId });
         const formattedCourses: ResponseFetchCourseList = {
-            courses: fetchCourse.map((course: any) => ({
+            courses: fetchCourse.map((course: ICourse) => ({
                 _id: course._id,
                 courseCategory: course.courseCategory,
                 courseDescription: course.courseDescription,
@@ -127,7 +128,7 @@ export default class CourseRepository implements ICourseRepository {
       
           // Format the fetched courses similar to fetchTutorCourses
           const formattedCourses: ResponseFetchCourseList = {
-            courses: courses.map((course: any) => ({
+            courses: courses.map((course: ICourse) => ({
               _id: course._id,
               courseCategory: course.courseCategory,
               courseDescription: course.courseDescription,
