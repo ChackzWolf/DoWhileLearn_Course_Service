@@ -30,4 +30,5 @@ export interface ICourse extends Document {
   purchasedUsers: Types.ObjectId[]; // Array of ObjectId references
   benefits_prerequisites: IBenefitsPrerequisites;
   Modules: IModule[];
+  _id:string
 }

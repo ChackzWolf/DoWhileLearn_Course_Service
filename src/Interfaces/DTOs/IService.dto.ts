@@ -67,10 +67,10 @@ export interface UploadVideoDTO {
   
   // DTO for fetching courses
   export interface FetchCourseResponseDTO {
-    success?: boolean;
-    message?: string;
-    courses?: ICourse[];
-  }
+    success: boolean;
+    courses?: ICourse[]; // Use `ICourse[]` directly here if you're expecting the full array of courses
+    error?: string;
+}
   
   // DTO for fetching tutor courses
   export interface FetchTutorCoursesDTO {
@@ -80,6 +80,7 @@ export interface UploadVideoDTO {
   export interface FetchTutorCoursesResponseDTO {
     success: boolean;
     courses?: ICourse[] | undefined ;
+    message?:string
   }
   
   // DTO for fetching course details
@@ -89,6 +90,7 @@ export interface UploadVideoDTO {
   
   export interface FetchCourseDetailsResponseDTO {
     courseDetails: ICourse | undefined; // Assuming course detail is any for now; it should be a specific type
+    message?:string;
   }
   
   // DTO for adding purchased users
@@ -110,7 +112,8 @@ export interface GetCoursesByIdsDTO {
   
   export interface GetCoursesByIdsResponseDTO {
     success: boolean;
-    courses?: ICourse[] | undefined;
+    courses?: ICourse[];
+    message?: string;
   }
   
   // Nested DTOs for course structure

@@ -28,8 +28,8 @@ export default class CourseRepository implements ICourseRepository {
         const fetchCourse = await Course.find().exec(); // Use .exec() for type inference
 
         const formattedCourses: ResponseFetchCourseList = {
-            courses: fetchCourse.map((course: any) => ({
-                _id: course._id,
+            courses: fetchCourse.map((course: ICourse) => ({
+                _id: String(course._id),
                 courseCategory: course.courseCategory,
                 courseDescription: course.courseDescription,
                 courseLevel: course.courseLevel,
@@ -58,35 +58,32 @@ export default class CourseRepository implements ICourseRepository {
     }
 
 
-    async findCourseById(courseId: string): Promise<ICourse> { // Adjust return type as necessary
-        const courseDetails = await Course.findById(courseId);
-        console.log(courseDetails, 'course details from repo');
-        return courseDetails;
+    async findCourseById(courseId: string): Promise<ICourse | null> { 
+      const courseDetails = await Course.findById(courseId);
+      console.log(courseDetails, 'course details from repo');
+      return courseDetails; // This can return null if no course is found
+  }
+
+  async addToPurchaseList(userId: string, courseId: string): Promise<AddToPurchaseListResponse> {
+    try {
+        // First, check if the course is already in the cart
+        // If courseId is not in cart, add it
+        await Course.updateOne(
+            { _id: courseId },
+            { $addToSet: { purchasedUsers: userId } } // Add userId to purchasedUsers array, ensuring uniqueness
+        );
+        return { message: 'Course added to Purchase List', success: true };
+    } catch (error) {
+        console.error('Error adding course to purchase list:', error);
+        throw new Error('Failed to update purchase list');
     }
-
-
-    async addToPurchaseList(userId: string, courseId: string):Promise<AddToPurchaseListResponse> {
-        try {
-          // First, check if the course is already in the cart
-    
-            // If courseId is not in cart, add it
-            await Course.updateOne(
-              { _id: courseId },
-              { $addToSet: { purchasedUsers: userId } } // Add courseId to cart array, ensuring uniqueness
-            );
-            return { message: 'Course added to Purchase List', success:true};
-          
-        } catch (error) {
-          console.error('Error toggling course in cart:', error);
-          throw new Error('Failed to update cart');
-        }
-      }
+}
       async fetchTutorCourses(tutorId: string): Promise<ResponseFetchCourseList> {
         console.log(tutorId, 'tutorId');
         const fetchCourse = await Course.find({ tutorId });
         const formattedCourses: ResponseFetchCourseList = {
             courses: fetchCourse.map((course: ICourse) => ({
-                _id: course._id,
+                _id: String(course._id),
                 courseCategory: course.courseCategory,
                 courseDescription: course.courseDescription,
                 courseLevel: course.courseLevel,
@@ -113,51 +110,51 @@ export default class CourseRepository implements ICourseRepository {
         return formattedCourses;
     }
     async getCoursesByIds(courseIds: string[]): Promise<ResponseFetchCourseList> {
-        try {
-          // Convert courseIds to an array of ObjectId
-          const objectIds = courseIds.map(id => new mongoose.Types.ObjectId(id));
-      
-          // Query the CourseModel to fetch courses with matching IDs
-          const courses = await Course.find({
-            _id: { $in: objectIds }
-          });
-      
-          if (!courses || courses.length === 0) {
-            throw new Error("No courses found with the provided IDs.");
-          }
-      
-          // Format the fetched courses similar to fetchTutorCourses
-          const formattedCourses: ResponseFetchCourseList = {
-            courses: courses.map((course: ICourse) => ({
-              _id: course._id,
-              courseCategory: course.courseCategory,
-              courseDescription: course.courseDescription,
-              courseLevel: course.courseLevel,
-              coursePrice: course.coursePrice,
-              courseTitle: course.courseTitle,
-              demoURL: course.demoURL,
-              discountPrice: course.discountPrice,
-              thumbnail: course.thumbnail,
-              benefits_prerequisites: {
-                benefits: course.benefits_prerequisites?.benefits || [],
-                prerequisites: course.benefits_prerequisites?.prerequisites || [],
-              },
-              Modules: course.Modules.map((module: any) => ({
-                name: module.name,
-                description: module.description,
-                lessons: module.lessons.map((lesson: any) => ({
-                  title: lesson.title,
-                  video: lesson.video,
-                  description: lesson.description,
-                })),
+      try {
+        // Convert courseIds to an array of ObjectId
+        const objectIds = courseIds.map(id => new mongoose.Types.ObjectId(id));
+    
+        // Query the CourseModel to fetch courses with matching IDs
+        const courses = await Course.find({ _id: { $in: objectIds } });
+    
+        if (!courses || courses.length === 0) {
+          throw new Error("No courses found with the provided IDs.");
+        }
+    
+        // Format the fetched courses similar to fetchTutorCourses
+        const formattedCourses: ResponseFetchCourseList = {
+          courses: courses.map((course: ICourse) => ({
+            _id: String(course._id), // Ensure _id is a string
+            courseCategory: course.courseCategory,
+            courseDescription: course.courseDescription,
+            courseLevel: course.courseLevel,
+            coursePrice: course.coursePrice,
+            courseTitle: course.courseTitle,
+            demoURL: course.demoURL,
+            discountPrice: course.discountPrice,
+            thumbnail: course.thumbnail,
+            benefits_prerequisites: {
+              benefits: course.benefits_prerequisites?.benefits || [],
+              prerequisites: course.benefits_prerequisites?.prerequisites || [],
+            },
+            Modules: course.Modules.map((module: any) => ({
+              name: module.name,
+              description: module.description,
+              lessons: module.lessons.map((lesson: any) => ({
+                title: lesson.title,
+                video: lesson.video,
+                description: lesson.description,
               })),
             })),
-          };
-          return formattedCourses;
-  } catch (error) {
-    console.error("Error fetching courses:", error);
-    throw error; // Re-throw to handle it further up the chain
-  }
-}
+          })),
+        };
+        
+        return formattedCourses;
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+        throw new Error("Failed to fetch courses: " ); // Provide more context in the error
+      }
+    }
+    
 
 }

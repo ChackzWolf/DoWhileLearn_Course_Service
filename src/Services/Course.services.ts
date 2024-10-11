@@ -20,6 +20,7 @@ import {
     GetCoursesByIdsDTO,
     GetCoursesByIdsResponseDTO,
 } from '../Interfaces/DTOs/IService.dto'
+import { ResponseFetchCourseList } from "../Interfaces/DTOs/IRepository.dto";
 dotenv.config();
  
 
@@ -84,62 +85,92 @@ export class CourseService implements ICourseUseCase {
         }
     } 
  
-    async fetchCourse(): Promise<FetchCourseResponseDTO >{
+    async fetchCourse(): Promise<FetchCourseResponseDTO> {
         try {
-            const fetchCourse = await repository.getCourses(); 
-            return fetchCourse
+            const fetchCourse: ResponseFetchCourseList = await repository.getCourses();
+    
+            return {
+                success: true,
+                courses: fetchCourse.courses // Return the array of courses directly
+            };
         } catch (error) {
-            console.error("An unknown error occured: ", error );    
-            return { success: false, message: "Course fetch error"}
+            console.error("An unknown error occurred: ", error);
+            return {
+                success: false,
+                error: 'Failed to fetch courses. Please try again later.'
+            };
         }
     }
 
     async fetchTutorCourses(data: FetchTutorCoursesDTO): Promise<FetchTutorCoursesResponseDTO> {
         try {
             const courses = await repository.fetchTutorCourses(data.tutorId);
-            return { success: true,courses: courses.courses }; // Courses should match ResponseFetchCourseList type
+            return {
+                success: true,
+                courses: courses.courses,  // Ensure the response matches the ResponseFetchCourseList structure
+            };
         } catch (error) {
-            return { success: false };
+            console.error('Error fetching tutor courses:', error);
+            return { success: false, message: 'Failed to fetch courses' };  // Added error message for clarity
         }
     }
-
-    async fetchCourseDetails(data: FetchCourseDetailsDTO): Promise<FetchCourseDetailsResponseDTO>{
-        try{
+    async fetchCourseDetails(data: FetchCourseDetailsDTO): Promise<FetchCourseDetailsResponseDTO> {
+        try {
             const courseDetails = await repository.findCourseById(data.id);
-            console.log(courseDetails, 'Course details from')
-            return  { courseDetails };
-
-        }catch(error){
-            console.log(error)
-            return {courseDetails : undefined}
+            console.log(courseDetails, 'Course details from service');
+    
+            if (!courseDetails) {
+                return { courseDetails: undefined, message: 'Course not found' };
+            }
+    
+            return { courseDetails }; // Return the found course details
+        } catch (error) {
+            console.log(error);
+            return { courseDetails: undefined, message: 'An error occurred while fetching course details' };
         }
     }
 
     async addToPurchasedList(data: AddToPurchasedListDTO): Promise<AddToPurchasedListResponseDTO> {
         try {
-            console.log(data)
-            const response = await repository.addToPurchaseList(data.userId,data.courseId);
-            console.log(response)
-            if(response.success){
-                return {message:response.message, success: true, status: StatusCode.Created}
-            }else{
-                return {message: "error creating order", success: false, status: StatusCode.NotFound}
-            }
+            console.log(data);
+            const response = await repository.addToPurchaseList(data.userId, data.courseId);
+            console.log(response);
+            
+            return {
+                message: response.success ? response.message : "An error occurred while adding to the purchased list", // Provide a default message
+                success: response.success,
+                status: StatusCode.Created
+            };
         } catch (error) {
-            console.log(error)
-            return {message :"Error occured while creating order", success: false , status: StatusCode.ExpectationFailed }
+            console.log(error);
+            return {
+                message: "Error occurred while creating order", // Ensure message is always a string
+                success: false,
+                status: StatusCode.ExpectationFailed
+            };
         }
     }
+    
+    
 
     async getCoursesByIds(data: GetCoursesByIdsDTO): Promise<GetCoursesByIdsResponseDTO> {
         try {
-            console.log(data, 'ddata form useCase')
-            const courses = await repository.getCoursesByIds(data.courseIds);
-            console.log(courses)
-            return { success: true, courses: courses.courses }; // Courses should match ResponseFetchCourseList type
+          console.log(data, 'data from useCase');
+          const courses = await repository.getCoursesByIds(data.courseIds);
+          console.log(courses);
+          
+          return {
+            success: true,
+            courses: courses.courses, // Ensure this is correctly typed
+          };
         } catch (error) {
-            return {success :false}
+          console.error("Error in getCoursesByIds service:", error);
+          return {
+            success: false,
+            message: error instanceof Error ? error.message : 'Unknown error occurred', // Provide error details
+          };
         }
-    }
+      }
+      
 }
  

@@ -22,7 +22,7 @@ export interface GetCourseInCartRequest {
   }
   
   export interface ResponseFetchCourseList {
-    courses: ResponseFetchCourse[];
+    courses: ResponseFetchCourse[] | undefined;
   }
   
   export interface EmptyRequest {}
@@ -99,4 +99,13 @@ export interface GetCourseInCartRequest {
     message: string;
     success: boolean;
   }
+
+  export interface AddPurchasedUsersResponse {
+    success: boolean;
+    message: string;
+    status: boolean;
+}
+export interface RequestGetCoursesByIds {
+  courseIds: string[];
+}
   

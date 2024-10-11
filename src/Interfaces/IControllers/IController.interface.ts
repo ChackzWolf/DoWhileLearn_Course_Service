@@ -13,6 +13,7 @@ ImageRequest,
 ImageResponse,
 SubmitCourseRequest,
 SubmitCourseResponse,
+RequestGetCoursesByIds
 } from '../DTOs/IController.dto';
 
 export interface ICourseController {
@@ -24,4 +25,5 @@ export interface ICourseController {
     fetchTutorCourses(call: ServerUnaryCall<RequestFetchTutorCourse, ResponseFetchCourseList>, callback: sendUnaryData<ResponseFetchCourseList>): Promise<void>;
     fetchCourseDetails(call: ServerUnaryCall<RequestFetchCourseDetails, ResponseFetchCourse>, callback: sendUnaryData<ResponseFetchCourse>): Promise<void>;
     getCoursesByIds(call: ServerUnaryCall<GetCourseInCartRequest, ResponseFetchCourseList>, callback: sendUnaryData<ResponseFetchCourseList>):Promise<void>
-}
+    addToPurchasedList(call:ServerUnaryCall<AddPurchasedUsersRequest, AddPurchasedUsersResponse>, callback:sendUnaryData<AddPurchasedUsersResponse>):Promise<void>
+    getCoursesByIds(call: ServerUnaryCall<RequestGetCoursesByIds, ResponseFetchCourseList>, callback: sendUnaryData<ResponseFetchCourseList>): Promise<void> }
