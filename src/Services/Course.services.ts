@@ -22,19 +22,19 @@ import {
 } from '../Interfaces/DTOs/IService.dto'
 import { ResponseFetchCourseList } from "../Interfaces/DTOs/IRepository.dto";
 dotenv.config();
- 
+
 
 const repository = new CourseRepository()
 
 export class CourseService implements ICourseUseCase {
     async uploadVideo(data: UploadVideoDTO): Promise<UploadVideoResponseDTO> {
-          
+
         try {
             console.log(data, 'dataaa');
             console.log(Buffer.byteLength(data.videoBinary), 'Video size in bytes');
             const result = await uploadFile(data.videoBinary)
             console.log('File uploaded successfully:', result);
-            return {message:"File has been uploaded successfully", success: true, s3Url: result.publicUrl}
+            return { message: "File has been uploaded successfully", success: true, s3Url: result.publicUrl }
         } catch (error: unknown) {
             if (error instanceof Error) {
                 console.error('File upload failed:', error.message);
@@ -47,48 +47,48 @@ export class CourseService implements ICourseUseCase {
     }
 
     async uploadImage(data: UploadImageDTO): Promise<UploadImageResponseDTO> {
-        try{
-            const response = await uploadImage(data.imageBinary,data.imageName)
-            return {message: "Image uploaded successfully.", s3Url: response.publicUrl, success:true};
-        }catch(error){
+        try {
+            const response = await uploadImage(data.imageBinary, data.imageName)
+            return { message: "Image uploaded successfully.", s3Url: response.publicUrl, success: true };
+        } catch (error) {
             if (error instanceof Error) {
                 console.error('File upload failed:', error.message);
-                return { success:false, message: `File upload failed: ${error.message}` };
+                return { success: false, message: `File upload failed: ${error.message}` };
             } else {
                 console.error('An unknown error occurred:', error);
-                return { success:false, message: 'File upload failed: Unknown error' };
+                return { success: false, message: 'File upload failed: Unknown error' };
             }
         }
     }
-    
-    async uploadCourse(data: UpdateCourseDTO): Promise<UploadCourseResponseDTO>{
-        try{
+
+    async uploadCourse(data: UpdateCourseDTO): Promise<UploadCourseResponseDTO> {
+        try {
             console.log(data, 'data form service')
             const uploadData = await repository.createCourse(data);
             console.log(uploadData, 'uploaded data ');
-            return {success: true, message: "Course succesfully uploaded."}
-        }catch(error){
+            return { success: true, message: "Course succesfully uploaded." }
+        } catch (error) {
             console.error('An unknown error occurred:', error);
-            return { success:false, message: 'Course upload failed:  error' };
+            return { success: false, message: 'Course upload failed:  error' };
         }
     }
 
-    async updateCourse(data: UpdateCourseDTO): Promise<UploadCourseResponseDTO>{
-        try{
-            console.log(data, 'data to update form service') 
+    async updateCourse(data: UpdateCourseDTO): Promise<UploadCourseResponseDTO> {
+        try {
+            console.log(data, 'data to update form service')
             const uploadData = await repository.updateCourse(data);
             console.log(uploadData, 'uploaded data ');
-            return {success: true, message: "Course succesfully updated."}
-        }catch(error){
+            return { success: true, message: "Course succesfully updated." }
+        } catch (error) {
             console.error('An unknown error occurred:', error);
-            return { success:false, message: 'Course update failed:  error' };
+            return { success: false, message: 'Course update failed:  error' };
         }
-    } 
- 
+    }
+
     async fetchCourse(): Promise<FetchCourseResponseDTO> {
         try {
             const fetchCourse: ResponseFetchCourseList = await repository.getCourses();
-    
+
             return {
                 success: true,
                 courses: fetchCourse.courses // Return the array of courses directly
@@ -118,11 +118,11 @@ export class CourseService implements ICourseUseCase {
         try {
             const courseDetails = await repository.findCourseById(data.id);
             console.log(courseDetails, 'Course details from service');
-    
+
             if (!courseDetails) {
                 return { courseDetails: undefined, message: 'Course not found' };
             }
-    
+
             return { courseDetails }; // Return the found course details
         } catch (error) {
             console.log(error);
@@ -135,7 +135,7 @@ export class CourseService implements ICourseUseCase {
             console.log(data);
             const response = await repository.addToPurchaseList(data.userId, data.courseId);
             console.log(response);
-            
+
             return {
                 message: response.success ? response.message : "An error occurred while adding to the purchased list", // Provide a default message
                 success: response.success,
@@ -150,27 +150,26 @@ export class CourseService implements ICourseUseCase {
             };
         }
     }
-    
-    
+
+
 
     async getCoursesByIds(data: GetCoursesByIdsDTO): Promise<GetCoursesByIdsResponseDTO> {
         try {
-          console.log(data, 'data from useCase');
-          const courses = await repository.getCoursesByIds(data.courseIds);
-          console.log(courses);
-          
-          return {
-            success: true,
-            courses: courses.courses, // Ensure this is correctly typed
-          };
+            console.log(data, 'data from useCase');
+            const courses = await repository.getCoursesByIds(data.courseIds);
+            console.log(courses);
+
+            return {
+                success: true,
+                courses: courses.courses, // Ensure this is correctly typed
+            };
         } catch (error) {
-          console.error("Error in getCoursesByIds service:", error);
-          return {
-            success: false,
-            message: error instanceof Error ? error.message : 'Unknown error occurred', // Provide error details
-          };
+            console.error("Error in getCoursesByIds service:", error);
+            return {
+                success: false,
+                message: error instanceof Error ? error.message : 'Unknown error occurred', // Provide error details
+            };
         }
-      }
-      
+    }
+
 }
- 
