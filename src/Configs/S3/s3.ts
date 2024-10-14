@@ -1,6 +1,5 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import dotenv from 'dotenv';
-import { Request, Response } from 'express';
 import { configs } from "../ENV_configs/ENV.configs";
 
 
