@@ -1,11 +1,12 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import dotenv from 'dotenv';
 import { Request, Response } from 'express';
+import { configs } from "../ENV_configs/ENV.configs";
 
 
 dotenv.config();
-const bucketName = process.env.BUCKET_NAME
-const region = process.env.AWS_REGION
+const bucketName = configs.BUCKET_NAME
+const region = configs.AWS_REGION
 
 const s3Client = new S3Client({ region: 'eu-north-1' });
 
