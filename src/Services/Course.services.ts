@@ -22,11 +22,97 @@ import {
 } from '../Interfaces/DTOs/IService.dto'
 import { ResponseFetchCourseList } from "../Interfaces/DTOs/IRepository.dto";
 dotenv.config();
+import { kafkaConfig } from "../Configs/Kafka.configs/Kafka.configs";
 
+// types/events.ts
+export interface OrderEvent {
+    orderId: string;
+    userId: string;
+    courseId: string;
+    tutorId: string;
+    status: string;
+    timestamp: Date;
+  }
+  
+  // types/events.ts
+  export interface OrderEventData {
+    userId: string;
+    tutorId: string;
+    courseId: string;
+    transactionId: string;
+    title: string;
+    thumbnail: string;
+    price: string;
+    adminShare: string; 
+    tutorShare: string;
+    paymentStatus:boolean;
+    timestamp: Date;
+    status: string;
+  }
 
 const repository = new CourseRepository()
 
 export class CourseService implements ICourseUseCase {
+
+
+
+    async handleOrderSuccess(paymentEvent: OrderEventData): Promise<void> {
+        try {
+          // Create order in database
+          
+        //   await repository.handleCoursePurchase(paymentEvent);
+    
+
+            const result = await repository.addToPurchaseList(paymentEvent.courseId,paymentEvent.userId);
+            if(!result.success){
+                throw Error
+            }
+            await kafkaConfig.sendMessage('order.success', paymentEvent);
+       
+        } catch (error) {
+          console.error('Order creation failed:', error);
+          
+          const failureEvent: OrderEventData = {
+            ...paymentEvent,
+            status: 'FAILED',
+            timestamp: new Date()
+          };
+    
+          await kafkaConfig.sendMessage('order-transaction-failed', failureEvent);
+        }
+      }
+  
+      async handleOrderTransactionFail(failedTransactionEvent:OrderEventData){
+        try {
+          this.roleBackOrder(failedTransactionEvent);
+  
+        } catch (error) {
+          
+        }
+      }
+  
+      private async roleBackOrder(failedTransactionEvent: OrderEventData)  {
+        // Implement order role back here
+        console.log("Role back transaction fail", failedTransactionEvent);
+      }
+  
+      private async createOrder(paymentEvent: OrderEventData): Promise<void> {
+        // Implement order creation logic here
+        console.log(`Creating order for payment: ${paymentEvent.transactionId}`);
+      }
+
+
+/////////////////// above create order sructure is temporary;
+
+
+
+
+
+
+
+
+
+
     async uploadVideo(data: UploadVideoDTO): Promise<UploadVideoResponseDTO> {
 
         try {

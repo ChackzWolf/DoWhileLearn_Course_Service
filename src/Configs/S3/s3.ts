@@ -57,7 +57,6 @@ export const uploadImage = async (imageBinary: Buffer, imageName: string) => {
     // Return the public URL of the uploaded file
     const publicUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${params.Key}`;
     console.log('Public URL:', publicUrl);
-
     return { publicUrl }; // Return the public URL for future use
   } catch (err: any) {
     console.error('Upload error:', err);

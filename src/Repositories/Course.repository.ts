@@ -68,10 +68,14 @@ export default class CourseRepository implements ICourseRepository {
     try {
       // First, check if the course is already in the cart
       // If courseId is not in cart, add it
-      await Course.updateOne(
+      const updatedCourse = await Course.updateOne(
         { _id: courseId },
         { $addToSet: { purchasedUsers: userId } } // Add userId to purchasedUsers array, ensuring uniqueness
       );
+      if(!updatedCourse){
+        console.log('error in adding to purchase list')
+        throw Error
+      }
       return { message: 'Course added to Purchase List', success: true };
     } catch (error) {
       console.error('Error adding course to purchase list:', error);

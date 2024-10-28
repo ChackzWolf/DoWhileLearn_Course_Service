@@ -78,7 +78,6 @@ const grpcServer = () => {
 
     )
 }
-
 grpcServer() 
 connectDB()
 
@@ -100,3 +99,13 @@ server.addService(courseProto.CourseService.service, {
     AddPurchasedUsers: controller.addToPurchasedList,
     GetCourseInCart: controller.getCoursesByIds
 })
+
+// Start Kafka consumer
+controller.start()
+  .catch(error => console.error('Failed to start kafka course service:', error));
+
+const PORT = configs.PORT; 
+app.listen(PORT, () => {
+  console.log(`Course service running on port ${PORT}`);
+});
+ 

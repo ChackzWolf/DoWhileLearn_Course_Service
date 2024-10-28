@@ -22,10 +22,61 @@ import {
 } from "../Interfaces/DTOs/IController.dto";
 import { ICourseController } from "../Interfaces/IControllers/IController.interface";
 import { StatusCode } from "../Interfaces/Enums/enums";
+import { kafkaConfig } from "../Configs/Kafka.configs/Kafka.configs";
+import { KafkaMessage } from 'kafkajs';
 
 const courseService = new CourseService();
 
+export interface OrderEventData {
+    userId: string;
+    tutorId: string;
+    courseId: string;
+    transactionId: string;
+    title: string;
+    thumbnail: string;
+    price: string;
+    adminShare: string; 
+    tutorShare: string;
+    paymentStatus:boolean;
+    timestamp: Date;
+    status: string;
+  }
+
+  
+ 
+
 export class courseController implements ICourseController {
+
+    async start(): Promise<void> {
+        await kafkaConfig.consumeMessages(
+          'order-service-group',
+          ['payment.success','transaction-failed'],
+          this.handleMessage.bind(this)
+        );
+      }
+  
+      // checking order  success or fail
+      private async handleMessage(message: KafkaMessage): Promise<void> {
+        try {
+          const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');
+          console.log('START', paymentEvent, 'MESAGe haaha')
+          if(paymentEvent.status !== 'SUCCESS'){
+            await courseService.handleOrderTransactionFail(paymentEvent)
+            return
+          }
+          await courseService.handleOrderSuccess(paymentEvent);
+        } catch (error) {
+          console.error('Error processing message:', error);
+        }
+      }
+
+
+
+
+
+ 
+
+
     async uploadVideo(
         call: ServerUnaryCall<VideoRequest, VideoResponse | undefined>,
         callback: sendUnaryData<VideoResponse | undefined>

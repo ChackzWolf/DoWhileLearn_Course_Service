@@ -3,8 +3,11 @@ dotenv.config()
 
 
 export const configs = {
+    // LISTENER PORT
+    PORT : process.env.PORT || 3004,
+
     // GRPC PORT CONFIG
-    COURSE_GRPC_PORT : process.env.COURSE_GRPC_PORT || 5001,
+    COURSE_GRPC_PORT : process.env.COURSE_GRPC_PORT || 5004,
 
 
     // DB COFNIGS
