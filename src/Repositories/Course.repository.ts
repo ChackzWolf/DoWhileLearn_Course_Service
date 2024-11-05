@@ -3,6 +3,7 @@ import { ICourseRepository } from "../Interfaces/IRepositories/IRepository.inter
 import mongoose from 'mongoose';
 import { ICourse } from "../Interfaces/Models/ICourse.";
 import { UpdateCourseDTO, AddToPurchaseListResponse, ResponseFetchCourseList } from "../Interfaces/DTOs/IRepository.dto";
+import { ObjectId } from "mongodb";
 
 
 export default class CourseRepository implements ICourseRepository {
@@ -64,14 +65,18 @@ export default class CourseRepository implements ICourseRepository {
     return courseDetails; // This can return null if no course is found
   }
 
-  async addToPurchaseList(userId: string, courseId: string): Promise<AddToPurchaseListResponse> {
+  async addToPurchaseList( courseId: string, userId: string): Promise<AddToPurchaseListResponse> {
     try {
       // First, check if the course is already in the cart
       // If courseId is not in cart, add it
+      console.log(userId, courseId, 'data from ')
+      const courseObjectId = new ObjectId(courseId);
+      const userObjectId = new ObjectId(userId);
       const updatedCourse = await Course.updateOne(
-        { _id: courseId },
-        { $addToSet: { purchasedUsers: userId } } // Add userId to purchasedUsers array, ensuring uniqueness
+        { _id: courseObjectId },
+        { $addToSet: { purchasedUsers: userObjectId } } // Add userId to purchasedUsers array, ensuring uniqueness
       );
+      console.log(updatedCourse, 'updated course')
       if(!updatedCourse){
         console.log('error in adding to purchase list')
         throw Error
@@ -82,6 +87,29 @@ export default class CourseRepository implements ICourseRepository {
       throw new Error('Failed to update purchase list');
     }
   }
+  async removeFromPurchaseList( courseId: string, userId: string ): Promise<AddToPurchaseListResponse> {
+    try { 
+        // Remove userId from purchasedUsers array
+
+        const courseObjectId = new ObjectId(courseId);
+        const userObjectId = new ObjectId(userId); 
+        
+        const updatedCourse = await Course.updateOne(
+            { _id: courseObjectId },
+            { $pull: { purchasedUsers: userObjectId } } // Remove userId from purchasedUsers array
+        );
+
+        if (updatedCourse.modifiedCount === 0) {
+            console.log('UserId not found or error in removing from purchase list');
+            return { message: 'User not found in purchase list or already removed.', success: false };
+        }
+
+        return { message: 'User removed from purchase list', success: true };
+    } catch (error) {
+        console.error('Error removing user from purchase list:', error);
+        throw new Error('Failed to update purchase list');
+    }
+}
   async fetchTutorCourses(tutorId: string): Promise<ResponseFetchCourseList> {
     console.log(tutorId, 'tutorId');
     const fetchCourse = await Course.find({ tutorId });

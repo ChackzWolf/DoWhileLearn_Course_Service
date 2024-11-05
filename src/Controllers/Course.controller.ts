@@ -35,46 +35,68 @@ export interface OrderEventData {
     title: string;
     thumbnail: string;
     price: string;
-    adminShare: string; 
+    adminShare: string;
     tutorShare: string;
-    paymentStatus:boolean;
+    paymentStatus: boolean;
     timestamp: Date;
     status: string;
-  }
+}
 
-  
- 
+
+
 
 export class courseController implements ICourseController {
 
     async start(): Promise<void> {
+        const topics = [
+            'course.update',
+            'course-service.rollback'
+        ]
+
         await kafkaConfig.consumeMessages(
-          'order-service-group',
-          ['payment.success','transaction-failed'],
-          this.handleMessage.bind(this)
+            'course-service-group',
+            topics,
+            this.routeMessage.bind(this)
         );
-      }
-  
-      // checking order  success or fail
-      private async handleMessage(message: KafkaMessage): Promise<void> {
+    } 
+
+    async routeMessage(topics: string[], message: KafkaMessage, topic: string): Promise<void> {
         try {
-          const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');
-          console.log('START', paymentEvent, 'MESAGe haaha')
-          if(paymentEvent.status !== 'SUCCESS'){
-            await courseService.handleOrderTransactionFail(paymentEvent)
-            return
-          }
-          await courseService.handleOrderSuccess(paymentEvent);
+            switch (topic) {
+                case 'course.update':
+                    await this.handleMessage(message);
+                    break;
+                case 'course-service.rollback':
+                    await this.handleRollback(message);
+                    break;
+                default:
+                    console.warn(`Unhandled topic: ${topic}`);
+            }
         } catch (error) {
-          console.error('Error processing message:', error);
+
         }
-      }
+    }
 
+    // checking order  success or fail
+    private async handleMessage(message: KafkaMessage): Promise<void> {
+        try {
+            const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');
+            console.log('START', paymentEvent, 'MESAGe haaha')  
+            await courseService.handleOrderSuccess(paymentEvent);
+        } catch (error) {
+            console.error('Error processing message:', error);
+        }
+    }
+    private async handleRollback(message: KafkaMessage): Promise<void> {
+        try {
+            const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');
+            console.log(' Role back started ', paymentEvent, 'MESAGe haaha')
+            await courseService.handleOrderTransactionFail(paymentEvent)
+        } catch (error) {
+            console.error('Error processing message:', error);
+        }
+    } 
 
-
-
-
- 
 
 
     async uploadVideo(
@@ -187,7 +209,7 @@ export class courseController implements ICourseController {
             console.error("Error fetching tutor courses:", error);
             callback(
                 {
-                    code: status.INTERNAL, 
+                    code: status.INTERNAL,
                     details: "Failed to fetch tutor courses due to an internal error",
                 },
                 null
@@ -233,7 +255,7 @@ export class courseController implements ICourseController {
             callback(null, {
                 success: response.success,
                 message: response.message || "",
-                status: response.status === StatusCode.Created, 
+                status: response.status === StatusCode.Created,
             });
         } catch (err) {
             console.error("Error occurred while adding to purchased list:", err);

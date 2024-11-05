@@ -54,67 +54,50 @@ const repository = new CourseRepository()
 
 export class CourseService implements ICourseUseCase {
 
-
-
     async handleOrderSuccess(paymentEvent: OrderEventData): Promise<void> {
         try {
-          // Create order in database
-          
-        //   await repository.handleCoursePurchase(paymentEvent);
-    
-
-            const result = await repository.addToPurchaseList(paymentEvent.courseId,paymentEvent.userId);
+            const { courseId, userId} = paymentEvent;
+            const result = await repository.addToPurchaseList(courseId, userId);
             if(!result.success){
-                throw Error
+                throw new Error("Error occured in updating, success is false.")
             }
-            await kafkaConfig.sendMessage('order.success', paymentEvent);
-       
-        } catch (error) {
-          console.error('Order creation failed:', error);
-          
-          const failureEvent: OrderEventData = {
-            ...paymentEvent,
-            status: 'FAILED',
-            timestamp: new Date()
-          };
-    
-          await kafkaConfig.sendMessage('order-transaction-failed', failureEvent);
-        }
-      }
+            await kafkaConfig.sendMessage('course.response', {
+                success: true,
+                service: 'course-service',
+                status:"COMPLETED",
+                transactionId: paymentEvent.transactionId
+              });
+        } catch (error:any) {
+            console.error('Order creation failed:', error);
+            await kafkaConfig.sendMessage('course.response', {
+                ...paymentEvent,
+                service: 'course-service',
+                status: 'FAILED',
+                error: error.message
+              });
+        } 
+    }
   
-      async handleOrderTransactionFail(failedTransactionEvent:OrderEventData){
+    async handleOrderTransactionFail(failedTransactionEvent:OrderEventData){
         try {
-          this.roleBackOrder(failedTransactionEvent);
-  
+            const {courseId, userId}  = failedTransactionEvent;
+            const updated = await repository.removeFromPurchaseList( courseId, userId );
+            if(!updated?.success){
+                throw new Error("Error in rollbacking")
+            }
+            await kafkaConfig.sendMessage('rollback-completed', {
+                transactionId: failedTransactionEvent.transactionId,
+                service: 'course-service'
+              });
         } catch (error) {
-          
+            throw new Error('Error in roll back.');
         }
-      }
-  
-      private async roleBackOrder(failedTransactionEvent: OrderEventData)  {
-        // Implement order role back here
-        console.log("Role back transaction fail", failedTransactionEvent);
-      }
-  
-      private async createOrder(paymentEvent: OrderEventData): Promise<void> {
-        // Implement order creation logic here
-        console.log(`Creating order for payment: ${paymentEvent.transactionId}`);
-      }
-
-
+    }
 /////////////////// above create order sructure is temporary;
 
 
 
-
-
-
-
-
-
-
     async uploadVideo(data: UploadVideoDTO): Promise<UploadVideoResponseDTO> {
-
         try {
             console.log(data, 'dataaa');
             console.log(Buffer.byteLength(data.videoBinary), 'Video size in bytes');

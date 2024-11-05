@@ -10,7 +10,13 @@ export class KafkaConfig {
   private constructor() {
     this.kafka = new Kafka({
       clientId: 'elearning-service',
-      brokers: ['localhost:9092']
+      brokers: ['localhost:9092'],
+      retry: {
+        maxRetryTime: 60000, // 60 seconds
+      
+      },
+      connectionTimeout: 10000, // 10 seconds
+      requestTimeout: 25000, // 25 seconds
     });
   }
 
@@ -51,26 +57,27 @@ export class KafkaConfig {
     }
   }
 
-  async consumeMessages(
+ 
+  async consumeMessages(       
     groupId: string,
     topics: string[],
-    messageHandler: (message: KafkaMessage) => Promise<void>
-  ): Promise<void> {
+    messageHandler: (topics: string[], message: KafkaMessage, topic: string) => Promise<void>
+): Promise<void> {
     try {
-      const consumer = await this.getConsumer(groupId);
-      await Promise.all(topics.map(topic => consumer.subscribe({ topic })));
+        const consumer = await this.getConsumer(groupId);
+        await Promise.all(topics.map(topic => consumer.subscribe({ topic })));
 
-      await consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
-          console.log(`Received message from topic ${topic}:`, message.value?.toString());
-          await messageHandler(message);
-        }
-      });
+        await consumer.run({
+            eachMessage: async ({ topic, partition, message }) => {
+                console.log(`Received message from topic ${topic}:`, message.value?.toString());
+                await messageHandler(topics, message, topic);
+            }
+        });
     } catch (error) {
-      console.error('Error consuming messages:', error);
-      throw error;
+        console.error('Error consuming messages:', error);
+        throw error;
     }
-  }
+}
 }
 
 export const kafkaConfig = KafkaConfig.getInstance();
