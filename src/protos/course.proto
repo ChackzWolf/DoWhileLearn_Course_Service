@@ -4,6 +4,7 @@ service CourseService {
   rpc UploadVideo(VideoRequest) returns (VideoResponse);
   rpc UploadImage(ImageRequest) returns (ImageResponse);
   rpc SubmitCourse(SubmitCourseRequest) returns (SubmitCourseResponse);
+  rpc DeleteCourse(DeleteCourseRequest) returns (DeleteCourseResponse);
   rpc EditCourse(SubmitCourseRequest) returns (SubmitCourseResponse);
   rpc FetchCourse(emptyRequest) returns (ResponseFetchCourseList);
   rpc FetchTutorCourse(RequestFetchTutorCourse) returns (ResponseFetchCourseList);
@@ -12,9 +13,18 @@ service CourseService {
   rpc GetCourseInCart(GetCourseInCartRequest) returns (ResponseFetchCourseList);
 }
 
+message DeleteCourseRequest {
+  string courseId = 1;
+}
+
+message DeleteCourseResponse {
+  int32 status = 1;
+  bool success = 2;
+}
 message GetCourseInCartRequest {
   repeated string courseIds = 1;
 }
+
 message AddPurchasedUsersRequest {
     string courseId = 1;
     string userId = 2;
@@ -29,7 +39,6 @@ message AddPurchasedUsersResponse {
 message RequestFetchCourseDetails {
   string id = 1;
 }
-
 message RequestFetchTutorCourse {
   string tutorId = 1;
 }
@@ -61,7 +70,6 @@ message ImageResponse {
 }
 
 
-
 message ResponseFetchCourse {
   string courseCategory = 1;
   string courseDescription = 2;
@@ -73,10 +81,9 @@ message ResponseFetchCourse {
   string thumbnail = 8;
   BenefitsPrerequisites benefits_prerequisites = 9;
   repeated Module Modules = 10;
-  string _id = 11;
-  string tutorId = 12;
+   string _id = 11;
+   string tutorId = 12;
 }
-
 
 
 
@@ -95,7 +102,6 @@ message SubmitCourseRequest {
   repeated Module Modules = 11;
   string courseId = 12;
 }
-
 
 message BenefitsPrerequisites {
   repeated string benefits = 1;
@@ -117,4 +123,5 @@ message Lesson {
 message SubmitCourseResponse {
   string message = 1;
   bool success = 2;
+  string courseId = 3;
 }

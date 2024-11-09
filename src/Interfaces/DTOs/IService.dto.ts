@@ -63,6 +63,7 @@ export interface UploadVideoDTO {
   export interface UploadCourseResponseDTO {
     success: boolean;
     message: string;
+    courseId?:string;
   }
   
   // DTO for fetching courses

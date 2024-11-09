@@ -135,7 +135,7 @@ export class CourseService implements ICourseUseCase {
             console.log(data, 'data form service')
             const uploadData = await repository.createCourse(data);
             console.log(uploadData, 'uploaded data ');
-            return { success: true, message: "Course succesfully uploaded." }
+            return { success: true, message: "Course succesfully uploaded.", courseId:uploadData._id };
         } catch (error) {
             console.error('An unknown error occurred:', error);
             return { success: false, message: 'Course upload failed:  error' };
@@ -151,6 +151,19 @@ export class CourseService implements ICourseUseCase {
         } catch (error) {
             console.error('An unknown error occurred:', error);
             return { success: false, message: 'Course update failed:  error' };
+        }
+    }
+
+    async deleteCourse(data:{courseId:string}): Promise<any> {
+        try {
+            const {courseId} = data;
+            const deleteCourse = await repository.deleteCourseById(courseId);
+            if(!deleteCourse){
+                return {success:false, status:StatusCode.Conflict};
+            }
+            return {success:true, status: StatusCode.Accepted};
+        } catch (error) {
+            throw new Error(`Error form service deleting course ${error} `);
         }
     }
 

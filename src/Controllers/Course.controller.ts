@@ -243,6 +243,29 @@ export class courseController implements ICourseController {
         }
     }
 
+
+    
+    async deleteCourse(
+        call: ServerUnaryCall<any, any>,
+        callback: sendUnaryData<any>
+    ):Promise<void>{
+        try {
+            const data = call.request;
+            const response = await courseService.deleteCourse(data);
+            callback(null, response);
+        } catch (error) {
+            console.error("Error delete course :", error);
+            callback({
+                code: status.INTERNAL,
+                details: "An internal error occurred while fetching course details.",
+            });
+        }
+    }
+
+
+
+
+
     async addToPurchasedList(
         call: ServerUnaryCall<AddPurchasedUsersRequest, AddPurchasedUsersResponse>,
         callback: sendUnaryData<AddPurchasedUsersResponse>

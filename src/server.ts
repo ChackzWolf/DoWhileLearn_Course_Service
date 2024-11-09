@@ -93,6 +93,7 @@ server.addService(courseProto.CourseService.service, {
     UploadImage: controller.uploadImage,
     SubmitCourse: controller.uploadCourse,
     EditCourse: controller.editCourse,
+    DeleteCourse: controller.deleteCourse,
     FetchCourse: controller.fetchCourse,
     FetchTutorCourse: controller.fetchTutorCourses,
     FetchCourseDetails: controller.fetchCourseDetails,

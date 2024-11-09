@@ -188,5 +188,13 @@ export default class CourseRepository implements ICourseRepository {
     }
   }
 
-
+  async deleteCourseById(courseId: string): Promise<boolean> {
+    try {
+        const result = await Course.findByIdAndDelete(courseId).exec();
+        return result ? true : false;
+    } catch (error) {
+        console.error(`Error deleting course with ID ${courseId}:`, error);
+        throw new Error(`Error deleting course: ${error}`);
+    }
+  }
 }
