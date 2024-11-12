@@ -1,4 +1,4 @@
-import { ICourse } from "../Models/ICourse.";
+import { ICourse } from "../Models/ICourse";
 
 
 export interface UpdateCourseDTO {

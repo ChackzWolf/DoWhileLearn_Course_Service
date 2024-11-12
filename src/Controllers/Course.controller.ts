@@ -24,6 +24,7 @@ import { ICourseController } from "../Interfaces/IControllers/IController.interf
 import { StatusCode } from "../Interfaces/Enums/enums";
 import { kafkaConfig } from "../Configs/Kafka.configs/Kafka.configs";
 import { KafkaMessage } from 'kafkajs';
+import { IReview } from "../Interfaces/Models/IReview";
 
 const courseService = new CourseService();
 
@@ -193,7 +194,7 @@ export class courseController implements ICourseController {
         try {
             const response = await courseService.fetchTutorCourses(data);
 
-            if (!response.success) {
+            if (!response.success) { 
                 callback(
                     {
                         code: status.NOT_FOUND,
@@ -315,6 +316,33 @@ export class courseController implements ICourseController {
                 code: status.INTERNAL,
                 message: "Internal server error",
             });
+        }
+    }
+
+    async addReview(call:ServerUnaryCall<IReview,any>,callback: sendUnaryData<any>){
+        try {
+            console.log('Triggerd add review', call.request);
+            const data = call.request;
+            const response = await courseService.addReview(data)
+            callback(null, response); 
+        } catch (error) {
+            console.error("Error in  controller adding review:", error);
+            callback({
+                code: status.INTERNAL,
+                message: "Internal server error",
+            });
+        }
+    }
+
+    async fetchReviewsOfCourse(call:ServerUnaryCall<any,any>, callback: sendUnaryData<any>){
+        try {
+            console.log(call.request,'nagaram nagaram');
+            const data = call.request;
+            const response = await courseService.fetchReviewByCourseId(data);
+            console.log(response, 'reseponse of fetch review');
+            callback(null,response);
+        } catch (error) {
+            
         }
     }
 }

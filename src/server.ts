@@ -98,7 +98,9 @@ server.addService(courseProto.CourseService.service, {
     FetchTutorCourse: controller.fetchTutorCourses,
     FetchCourseDetails: controller.fetchCourseDetails,
     AddPurchasedUsers: controller.addToPurchasedList,
-    GetCourseInCart: controller.getCoursesByIds
+    GetCourseInCart: controller.getCoursesByIds,
+    AddReview:controller.addReview,
+    FetchReviewsOfCourse: controller.fetchReviewsOfCourse,
 })
 
 // Start Kafka consumer

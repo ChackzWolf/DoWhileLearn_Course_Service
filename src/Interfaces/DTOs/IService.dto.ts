@@ -1,4 +1,5 @@
-import { ICourse } from "../Models/ICourse.";
+import { ICourse } from "../Models/ICourse";
+import { IReview } from "../Models/IReview";
 
 
 export interface UpdateCourseDTO {
@@ -91,6 +92,7 @@ export interface UploadVideoDTO {
   
   export interface FetchCourseDetailsResponseDTO {
     courseDetails: ICourse | undefined; // Assuming course detail is any for now; it should be a specific type
+    reviewData?:IReview[] | any
     message?:string;
   }
   

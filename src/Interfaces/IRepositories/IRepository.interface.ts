@@ -1,4 +1,4 @@
-import { ICourse } from "../Models/ICourse.";
+import { ICourse } from "../Models/ICourse";
 import {
         UpdateCourseDTO,
         AddToPurchaseListResponse,

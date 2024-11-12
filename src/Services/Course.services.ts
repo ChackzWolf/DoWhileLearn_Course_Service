@@ -23,6 +23,9 @@ import {
 import { ResponseFetchCourseList } from "../Interfaces/DTOs/IRepository.dto";
 dotenv.config();
 import { kafkaConfig } from "../Configs/Kafka.configs/Kafka.configs";
+import ReviewRepository from "../Repositories/Review.repository";
+import { IReview } from "../Interfaces/Models/IReview";
+import { error } from "console";
 
 // types/events.ts
 export interface OrderEvent {
@@ -51,6 +54,7 @@ export interface OrderEvent {
   }
 
 const repository = new CourseRepository()
+const reviewRepository = new ReviewRepository()
 
 export class CourseService implements ICourseUseCase {
 
@@ -204,8 +208,9 @@ export class CourseService implements ICourseUseCase {
             if (!courseDetails) {
                 return { courseDetails: undefined, message: 'Course not found' };
             }
+            const reviewData = await reviewRepository.fetchReviewsByCourseId(courseDetails._id);
 
-            return { courseDetails }; // Return the found course details
+            return { courseDetails, reviewData }; // Return the found course details
         } catch (error) {
             console.log(error);
             return { courseDetails: undefined, message: 'An error occurred while fetching course details' };
@@ -233,7 +238,31 @@ export class CourseService implements ICourseUseCase {
         }
     }
 
+    async addReview(data:IReview):Promise<{success:boolean, status:number, message:string}>{
+        try {
+            const createdReview = await reviewRepository.addReview(data);
+            if(!createdReview){
+                return {success:false, status:StatusCode.NotFound, message:"Failed to add review."};
+            } 
+            console.log(data.courseId,'this is created course id ')
+            return {success:true, status:StatusCode.Created, message: "Successfuly added your review."};
+        } catch (error) {
+            throw new Error(`error have been occured in service while creating review ${error}.`)
+        }
+    }
 
+    async fetchReviewByCourseId(data:{courseId:string}):Promise<{ success:boolean, status:number, reviewData:IReview[] | undefined }>{
+        try {
+            const courseId = data.courseId;
+            const reviews = await reviewRepository.fetchReviewsByCourseId(courseId);
+            if(!reviews){
+                throw error;
+            }
+            return {success:true, status:StatusCode.Found, reviewData:reviews}
+        }catch(error){
+            throw new Error(`Error occured in service while fetching review ${error}`)
+        }
+    }
 
     async getCoursesByIds(data: GetCoursesByIdsDTO): Promise<GetCoursesByIdsResponseDTO> {
         try {

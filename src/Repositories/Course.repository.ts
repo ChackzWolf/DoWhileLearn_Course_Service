@@ -1,7 +1,7 @@
 import { Course } from "../Schemas/Course.schema";
 import { ICourseRepository } from "../Interfaces/IRepositories/IRepository.interface"; // Adjust import path as necessary
 import mongoose from 'mongoose';
-import { ICourse } from "../Interfaces/Models/ICourse.";
+import { ICourse } from "../Interfaces/Models/ICourse";
 import { UpdateCourseDTO, AddToPurchaseListResponse, ResponseFetchCourseList } from "../Interfaces/DTOs/IRepository.dto";
 import { ObjectId } from "mongodb";
 
