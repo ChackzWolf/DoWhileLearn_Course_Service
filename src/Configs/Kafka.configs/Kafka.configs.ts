@@ -32,12 +32,17 @@ export class KafkaConfig {
       this.producer = this.kafka.producer();
       await this.producer.connect();
     }
-    return this.producer;
+    return this.producer; 
   }
 
   async getConsumer(groupId: string): Promise<Consumer> {
     if (!this.consumer) {
-      this.consumer = this.kafka.consumer({ groupId });
+      this.consumer = this.kafka.consumer({ 
+                                            groupId,
+                                            sessionTimeout: 30000,
+                                            heartbeatInterval: 3000,
+                                            readUncommitted: false 
+                                          });
       await this.consumer.connect();
     }
     return this.consumer;
@@ -80,4 +85,4 @@ export class KafkaConfig {
 }
 }
 
-export const kafkaConfig = KafkaConfig.getInstance();
+export const kafkaConfig = KafkaConfig.getInstance();  

@@ -35,6 +35,26 @@ export default class ReviewRepository  {
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
     // async getOverallRating(courseId: string): Promise<number | null> {
     //     const courseObjectId = new mongoose.Types.ObjectId(courseId);
     //     const result = await Review.aggregate([
@@ -53,4 +73,4 @@ export default class ReviewRepository  {
     //     }
     //     return null; // Return null if no reviews are found
     // }
-}
+}  

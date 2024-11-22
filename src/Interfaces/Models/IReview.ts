@@ -9,4 +9,4 @@ export interface IReview extends Document {
     comment: string;
     createdAt: Date;
     updatedAt: Date;
-  } 
+  }  

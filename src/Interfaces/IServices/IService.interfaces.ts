@@ -16,12 +16,12 @@ import {
     GetCoursesByIdsDTO,
     GetCoursesByIdsResponseDTO,
 } from '../DTOs/IService.dto'
+import { IPlainCourse } from '../Models/ICourse';
 
 export interface ICourseUseCase {
     uploadVideo(data: UploadVideoDTO): Promise<UploadVideoResponseDTO>;
-    uploadImage(data: UploadImageDTO): Promise<UploadImageResponseDTO>;
-    uploadCourse(data: UpdateCourseDTO): Promise<UploadCourseResponseDTO>;
-    updateCourse(data: UpdateCourseDTO): Promise<UploadCourseResponseDTO>; 
+    uploadCourse(courseData: IPlainCourse): Promise<UploadCourseResponseDTO>
+    updateCourse(courseData: IPlainCourse,courseId:string): Promise<UploadCourseResponseDTO>    
     fetchCourse(): Promise<FetchCourseResponseDTO >;
     fetchTutorCourses(data: FetchTutorCoursesDTO): Promise<FetchTutorCoursesResponseDTO>;
     fetchCourseDetails(data: FetchCourseDetailsDTO): Promise<FetchCourseDetailsResponseDTO>;

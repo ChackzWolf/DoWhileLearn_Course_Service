@@ -26,6 +26,7 @@ import { kafkaConfig } from "../Configs/Kafka.configs/Kafka.configs";
 import ReviewRepository from "../Repositories/Review.repository";
 import { IReview } from "../Interfaces/Models/IReview";
 import { error } from "console";
+import { IPlainCourse } from "../Interfaces/Models/ICourse";
 
 // types/events.ts
 export interface OrderEvent {
@@ -134,10 +135,10 @@ export class CourseService implements ICourseUseCase {
         }
     }
 
-    async uploadCourse(data: UpdateCourseDTO): Promise<UploadCourseResponseDTO> {
+    async uploadCourse(courseData: IPlainCourse): Promise<UploadCourseResponseDTO> {
         try {
-            console.log(data, 'data form service')
-            const uploadData = await repository.createCourse(data);
+            console.log(courseData, 'data form service')
+            const uploadData = await repository.createCourse(courseData);
             console.log(uploadData, 'uploaded data ');
             return { success: true, message: "Course succesfully uploaded.", courseId:uploadData._id };
         } catch (error) {
@@ -146,10 +147,10 @@ export class CourseService implements ICourseUseCase {
         }
     }
 
-    async updateCourse(data: UpdateCourseDTO): Promise<UploadCourseResponseDTO> {
+    async updateCourse(courseData: IPlainCourse,courseId:string): Promise<UploadCourseResponseDTO> {
         try {
-            console.log(data, 'data to update form service')
-            const uploadData = await repository.updateCourse(data);
+            console.log(courseData, 'data to update form service')
+            const uploadData = await repository.updateCourse(courseId,courseData);
             console.log(uploadData, 'uploaded data ');
             return { success: true, message: "Course succesfully updated." }
         } catch (error) {
@@ -170,14 +171,14 @@ export class CourseService implements ICourseUseCase {
             throw new Error(`Error form service deleting course ${error} `);
         }
     }
-
+ 
     async fetchCourse(): Promise<FetchCourseResponseDTO> {
         try {
-            const fetchCourse: ResponseFetchCourseList = await repository.getCourses();
+            const fetchCourse: IPlainCourse[] = await repository.getCourses();
 
             return {
                 success: true,
-                courses: fetchCourse.courses // Return the array of courses directly
+                courses: fetchCourse // Return the array of courses directly
             };
         } catch (error) {
             console.error("An unknown error occurred: ", error);
@@ -190,12 +191,12 @@ export class CourseService implements ICourseUseCase {
 
     async fetchTutorCourses(data: FetchTutorCoursesDTO): Promise<FetchTutorCoursesResponseDTO> {
         try {
-            const courses = await repository.fetchTutorCourses(data.tutorId);
+            const courses = await repository.getCoursesWithFilter({tutorId:data.tutorId});
             return {
                 success: true,
-                courses: courses.courses,  // Ensure the response matches the ResponseFetchCourseList structure
+                courses: courses,  // Ensure the response matches the ResponseFetchCourseList structure
             };
-        } catch (error) {
+        } catch (error) { 
             console.error('Error fetching tutor courses:', error);
             return { success: false, message: 'Failed to fetch courses' };  // Added error message for clarity
         }
@@ -234,7 +235,7 @@ export class CourseService implements ICourseUseCase {
                 message: "Error occurred while creating order", // Ensure message is always a string
                 success: false,
                 status: StatusCode.ExpectationFailed
-            };
+            }; 
         }
     }
 
@@ -276,6 +277,20 @@ export class CourseService implements ICourseUseCase {
             };
         } catch (error) {
             console.error("Error in getCoursesByIds service:", error);
+            return {
+                success: false,
+                message: error instanceof Error ? error.message : 'Unknown error occurred', // Provide error details
+            };
+        }
+    }
+
+    async fetchPurchasedCourses(data:{userId:string}){
+        try {
+            console.log(data, 'dta from service');
+            const courses = await repository.getCoursesWithFilter({purchasedUsers: { $in: [data.userId] }})
+            return {success:true, courses};
+        } catch (error) {
+            console.error("Error in fetch purchased course service:", error);
             return {
                 success: false,
                 message: error instanceof Error ? error.message : 'Unknown error occurred', // Provide error details

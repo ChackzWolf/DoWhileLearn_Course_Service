@@ -25,6 +25,7 @@ import { StatusCode } from "../Interfaces/Enums/enums";
 import { kafkaConfig } from "../Configs/Kafka.configs/Kafka.configs";
 import { KafkaMessage } from 'kafkajs';
 import { IReview } from "../Interfaces/Models/IReview";
+import { restructureSubmitCourse } from "../Utils/Restructure.utils";
 
 const courseService = new CourseService();
 
@@ -77,7 +78,7 @@ export class courseController implements ICourseController {
 
         }
     }
-
+ 
     // checking order  success or fail
     private async handleMessage(message: KafkaMessage): Promise<void> {
         try {
@@ -134,8 +135,11 @@ export class courseController implements ICourseController {
     ): Promise<void> {
         try {
             const data = call.request;
+            const courseData = restructureSubmitCourse(data);
             console.log(data, "data fro mcntorller");
-            const response = await courseService.uploadCourse(data);
+
+            console.log(JSON.stringify(data, null, 2));
+            const response = await courseService.uploadCourse(courseData);
             console.log(response, "response");
             callback(null, response);
         } catch (error) {
@@ -149,10 +153,15 @@ export class courseController implements ICourseController {
     ): Promise<void> {
         const data = call.request;
         console.log(data, "data from controller");
-        const response = await courseService.updateCourse(data);
+        console.log(JSON.stringify(data, null, 2));
+        const courseId = data.courseId;
+        const courseData = restructureSubmitCourse(data);
+        const response = await courseService.updateCourse(courseData,courseId);
         console.log(response, "response from controller");
         callback(null, response);
     }
+
+
     async fetchCourse(
         _call: ServerUnaryCall<null, ResponseFetchCourseList>,
         callback: sendUnaryData<ResponseFetchCourseList>
@@ -184,6 +193,8 @@ export class courseController implements ICourseController {
             );
         }
     }
+
+
     async fetchTutorCourses(
         call: ServerUnaryCall<RequestFetchTutorCourse, ResponseFetchCourseList>,
         callback: sendUnaryData<ResponseFetchCourseList>
@@ -217,6 +228,42 @@ export class courseController implements ICourseController {
             );
         }
     }
+
+    async fetchPurchasedCourses(
+        call: ServerUnaryCall<any, ResponseFetchCourseList>,
+        callback: sendUnaryData<ResponseFetchCourseList>
+    ): Promise<void> {
+        console.log("Fetching tutor courses...");
+
+        const data = call.request;
+        try {
+            const response = await courseService.fetchPurchasedCourses(data);
+            console.log(response, 'purchased courses from controller')
+            if (!response.success) { 
+                callback(
+                    {
+                        code: status.NOT_FOUND,
+                        details: response.message || "Courses not found",
+                    },
+                    null
+                );
+                return;
+            }
+
+            callback(null, { courses: response.courses || [] });
+        } catch (error) {
+            console.error("Error fetching tutor courses:", error);
+            callback(
+                {
+                    code: status.INTERNAL,
+                    details: "Failed to fetch tutor courses due to an internal error",
+                },
+                null
+            );
+        }
+    }
+
+
     async fetchCourseDetails(
         call: ServerUnaryCall<RequestFetchCourseDetails, ResponseFetchCourse>,
         callback: sendUnaryData<ResponseFetchCourse>
@@ -229,7 +276,7 @@ export class courseController implements ICourseController {
         try {
             const response = await courseService.fetchCourseDetails(data);
             console.log(response, "Response from service");
-
+            console.log(JSON.stringify(response.courseDetails, null, 2))
             if (response.courseDetails) {
                 callback(null, response.courseDetails as ResponseFetchCourse);
             } else {
@@ -332,7 +379,7 @@ export class courseController implements ICourseController {
                 message: "Internal server error",
             });
         }
-    }
+    } 
 
     async fetchReviewsOfCourse(call:ServerUnaryCall<any,any>, callback: sendUnaryData<any>){
         try {

@@ -1,3 +1,5 @@
+import { IPlainCourse } from "../Models/ICourse";
+
 export interface GetCourseInCartRequest {
     courseIds: string[];
   }
@@ -16,13 +18,13 @@ export interface GetCourseInCartRequest {
   export interface RequestFetchCourseDetails {
     id: string;
   }
-  
+   
   export interface RequestFetchTutorCourse {
     tutorId: string;
   }
   
   export interface ResponseFetchCourseList {
-    courses: ResponseFetchCourse[] | undefined;
+    courses: IPlainCourse[] | undefined;
   }
   
   export interface EmptyRequest {}
@@ -32,7 +34,7 @@ export interface GetCourseInCartRequest {
   }
   
   export interface VideoResponse {
-    success: boolean;
+    success: boolean; 
     message: string;
     s3Url?: string;
   }

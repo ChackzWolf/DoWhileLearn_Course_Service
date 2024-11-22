@@ -1,4 +1,4 @@
-import { ICourse } from "../Models/ICourse";
+import { ICourse, IPlainCourse } from "../Models/ICourse";
 
 
 export interface UpdateCourseDTO {
@@ -39,6 +39,6 @@ export interface AddToPurchaseListResponse {
 }
 
 export interface ResponseFetchCourseList {
-  courses: ICourse[];
+  courses: IPlainCourse[];
 }
-
+ 

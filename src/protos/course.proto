@@ -13,7 +13,12 @@ service CourseService {
   rpc GetCourseInCart(GetCourseInCartRequest) returns (ResponseFetchCourseList);
   rpc AddReview(ReviewData) returns (AddReviewResponse);
   rpc FetchReviewsOfCourse(FetchReviewsOfCourseRequest) returns (FetchReviewsOfCourseResponse);
-} 
+  rpc FetchPurchasedCourses(FetchPurchasedCourseRequest) returns (ResponseFetchCourse);
+}
+
+message FetchPurchasedCourseRequest {
+    string userId = 1;
+}
 
 message FetchReviewsOfCourseRequest {
   string courseId = 1;
@@ -97,8 +102,10 @@ message ResponseFetchCourse {
   string thumbnail = 8;
   BenefitsPrerequisites benefits_prerequisites = 9;
   repeated Module Modules = 10;
-   string _id = 11;
-   string tutorId = 12;
+  string _id = 11;
+  string tutorId = 12;
+  int32 averageRating = 13;
+  int32 ratingCount = 14;
 }
 
 
@@ -134,7 +141,49 @@ message Lesson {
   string title = 1;
   string video = 2;
   string description = 3;
+  repeated Question questions = 4;
 } 
+
+message Question {
+  int64 id = 1;
+  string type = 2;
+  string question = 3;
+  string difficulty = 4;
+
+  // Optional fields for quiz questions
+  repeated string options = 5;
+  int32 correctAnswer = 6;
+
+  // Optional fields for coding questions
+  string startingCode = 7;
+  int32 noOfParameters = 8;
+  repeated Parameter parameters = 9;
+  ExpectedOutput expectedOutput = 10;
+  repeated TestCase testCases = 11;
+  string solution = 12;
+}
+
+message Parameter {
+  string value = 1;
+  string dataType = 2;
+}
+
+message ExpectedOutput {
+  string value = 1;
+  string dataType = 2;
+}
+
+message TestCase {
+  repeated Parameter parameters = 1;
+  ExpectedOutput expectedValue = 2;
+}
+
+
+
+
+
+
+
 
 message SubmitCourseResponse {
   string message = 1;

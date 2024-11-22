@@ -1,20 +1,10 @@
-import { ICourse } from "../Models/ICourse";
+import { ICourse, IPlainCourse } from "../Models/ICourse";
 import { IReview } from "../Models/IReview";
 
 
 export interface UpdateCourseDTO {
-  tutorId: string;
-  courseCategory: string;
-  courseDescription: string;
-  courseLevel: string;
-  coursePrice: string;
-  courseTitle: string;
-  demoURL: string;
-  discountPrice: string;
-  thumbnail: string;
-  benefits_prerequisites: BenefitsPrerequisites;
-  Modules: Module[];
-  courseId: string;
+  courseId:string;
+  courseData: IPlainCourse
 }
 
 export interface BenefitsPrerequisites {
@@ -70,7 +60,7 @@ export interface UploadVideoDTO {
   // DTO for fetching courses
   export interface FetchCourseResponseDTO {
     success: boolean;
-    courses?: ICourse[]; // Use `ICourse[]` directly here if you're expecting the full array of courses
+    courses?: IPlainCourse[] | undefined; // Use `ICourse[]` directly here if you're expecting the full array of courses
     error?: string;
 }
   
@@ -81,7 +71,7 @@ export interface UploadVideoDTO {
   
   export interface FetchTutorCoursesResponseDTO {
     success: boolean;
-    courses?: ICourse[] | undefined ;
+    courses?: IPlainCourse[] | undefined ;
     message?:string
   }
   
