@@ -27,6 +27,7 @@ import ReviewRepository from "../Repositories/Review.repository";
 import { IReview } from "../Interfaces/Models/IReview";
 import { error } from "console";
 import { IPlainCourse } from "../Interfaces/Models/ICourse";
+import mongoose from "mongoose";
 
 // types/events.ts
 export interface OrderEvent {
@@ -174,6 +175,7 @@ export class CourseService implements ICourseUseCase {
  
     async fetchCourse(): Promise<FetchCourseResponseDTO> {
         try {
+            console.log('trig fetchCourse')
             const fetchCourse: IPlainCourse[] = await repository.getCourses();
 
             return {
@@ -287,7 +289,8 @@ export class CourseService implements ICourseUseCase {
     async fetchPurchasedCourses(data:{userId:string}){
         try {
             console.log(data, 'dta from service');
-            const courses = await repository.getCoursesWithFilter({purchasedUsers: { $in: [data.userId] }})
+            const userObjectId = new mongoose.Types.ObjectId(data.userId);
+            const courses = await repository.getCoursesWithFilter({purchasedUsers: { $in: [userObjectId] }})
             return {success:true, courses};
         } catch (error) {
             console.error("Error in fetch purchased course service:", error);

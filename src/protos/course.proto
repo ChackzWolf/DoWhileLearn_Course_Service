@@ -13,7 +13,7 @@ service CourseService {
   rpc GetCourseInCart(GetCourseInCartRequest) returns (ResponseFetchCourseList);
   rpc AddReview(ReviewData) returns (AddReviewResponse);
   rpc FetchReviewsOfCourse(FetchReviewsOfCourseRequest) returns (FetchReviewsOfCourseResponse);
-  rpc FetchPurchasedCourses(FetchPurchasedCourseRequest) returns (ResponseFetchCourse);
+  rpc FetchPurchasedCourses(FetchPurchasedCourseRequest) returns (ResponseFetchCourseList);
 }
 
 message FetchPurchasedCourseRequest {

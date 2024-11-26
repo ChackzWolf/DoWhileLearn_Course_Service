@@ -226,14 +226,14 @@ export class courseController implements ICourseController {
                 },
                 null
             );
-        }
+        } 
     }
 
     async fetchPurchasedCourses(
         call: ServerUnaryCall<any, ResponseFetchCourseList>,
         callback: sendUnaryData<ResponseFetchCourseList>
     ): Promise<void> {
-        console.log("Fetching tutor courses...");
+        console.log("Fetching tutor courses with...", call.request);
 
         const data = call.request;
         try {

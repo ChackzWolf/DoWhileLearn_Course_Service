@@ -72,7 +72,7 @@ export default class CourseRepository implements ICourseRepository {
     try {
       // First, check if the course is already in the cart
       // If courseId is not in cart, add it
-      console.log(userId, courseId, 'data from ')
+      console.log(userId, courseId, 'data from ') 
       const courseObjectId = new ObjectId(courseId);
       const userObjectId = new ObjectId(userId);
       const updatedCourse = await Course.updateOne(
@@ -179,6 +179,7 @@ export default class CourseRepository implements ICourseRepository {
 
 
   async getCoursesWithFilter(filters: any): Promise<IPlainCourse[]> {
+    console.log('reached getCoursewithFilter', filters)
     const pipeline = [
       // Match the courses based on filters
       { $match: filters },
