@@ -11,16 +11,12 @@ export default class CourseRepository implements ICourseRepository {
     // Create a course
       // Create a course
       async createCourse(data: IPlainCourse): Promise<IPlainCourse> {
-        // Restructure course data
         const structuredCourse = restructureSubmitCourse(data);
     
-        // Create a new course document
         const createdCourse = new Course(structuredCourse);
     
-        // Save the course document to the database
         const savedCourse = await createdCourse.save();
     
-        // Convert the saved document to a plain JavaScript object and cast it to IPlainCourse
         const plainCourse = savedCourse.toObject() as unknown as IPlainCourse;
     
         console.log(plainCourse, 'saved course');
@@ -62,11 +58,50 @@ export default class CourseRepository implements ICourseRepository {
   }
 
 
-  async findCourseById(courseId: string): Promise<any> {
-    const courseDetails = await Course.findById(courseId);
-    console.log(courseDetails, 'course details from repo');
-    return courseDetails; // This can return null if no course is found
+
+
+  async findCourseById(courseId: string): Promise<IPlainCourse | null> {
+    try {
+      const pipeline = [
+        { $match: { _id: new mongoose.Types.ObjectId(courseId) } },
+        {
+          $lookup: {
+            from: "reviews",
+            localField: "_id",
+            foreignField: "courseId",
+            as: "reviews",
+          },
+        },
+        {
+          $addFields: {
+            averageRating: { $avg: "$reviews.rating" },
+            ratingCount: { $size: "$reviews" },
+          },
+        },
+        {
+          $project: {
+            reviews: 0, // Exclude reviews from the result
+          },
+        },
+      ];
+  
+      const fetchCourses = await Course.aggregate(pipeline).exec();
+      const courseDetails = fetchCourses[0]
+  
+      // if (!courseDetails) {
+      //   throw new Error(`Course with ID ${courseId} not found`);
+      // }
+  
+      console.log(courseDetails, 'fetch course details with average rating');
+      return courseDetails;
+  
+    } catch (error:any) {
+      console.error(`Error fetching course details: ${error.message}`);
+      throw error; // Re-throw the error for the caller to handle
+    }
   }
+  
+  
 
   async addToPurchaseList( courseId: string, userId: string): Promise<AddToPurchaseListResponse> {
     try {
@@ -178,50 +213,36 @@ export default class CourseRepository implements ICourseRepository {
 
 
 
-  async getCoursesWithFilter(filters: any): Promise<IPlainCourse[]> {
+  async getCoursesWithFilter(filters: any = {}): Promise<IPlainCourse[]> {
     console.log('reached getCoursewithFilter', filters)
     const pipeline = [
-      // Match the courses based on filters
       { $match: filters },
-  
-      // Lookup to join the reviews collection based on courseId
       {
         $lookup: {
-          from: "reviews", // Name of the reviews collection
-          localField: "_id", // Local field (courseId in course collection)
-          foreignField: "courseId", // Foreign field (courseId in reviews collection)
-          as: "reviews", // Name of the field where reviews will be stored
+          from: "reviews", 
+          localField: "_id", 
+          foreignField: "courseId", 
+          as: "reviews",
         },
       },
-  
-      // Add the averageRating field by averaging the ratings in the reviews array
       {
         $addFields: {
-          averageRating: { $avg: "$reviews.rating" }, // Calculate the average rating
+          averageRating: { $avg: "$reviews.rating" },
           ratingCount: { $size: "$reviews" },
         },
       },
-  
-      // Optionally, remove the reviews array from the result (since we only need the average)
       {
         $project: {
-          reviews: 0, // Exclude the reviews field
+          reviews: 0, 
         },
       },
     ] as any[];
   
-    // Execute the aggregation pipeline
     const fetchCourses = await Course.aggregate(pipeline).exec();
   
-    // Log the fetched courses for debugging
     console.log(fetchCourses, 'fetch courses with average rating');
   
-    // Map over the results and convert each course document to IPlainCourse
-    // const plainCourses: IPlainCourse[] = fetchCourses.map(course => {
-    //   const plainCourse = course.toObject() as IPlainCourse;
-    //   return plainCourse;
-    // });
-  
+
     return fetchCourses as IPlainCourse[];
   }
 

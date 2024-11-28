@@ -99,7 +99,8 @@ export class CourseService implements ICourseUseCase {
             throw new Error('Error in roll back.');
         }
     }
-/////////////////// above create order sructure is temporary;
+
+
 
 
 
@@ -134,14 +135,14 @@ export class CourseService implements ICourseUseCase {
                 return { success: false, message: 'File upload failed: Unknown error' };
             }
         }
-    }
+    } 
 
     async uploadCourse(courseData: IPlainCourse): Promise<UploadCourseResponseDTO> {
         try {
             console.log(courseData, 'data form service')
             const uploadData = await repository.createCourse(courseData);
             console.log(uploadData, 'uploaded data ');
-            return { success: true, message: "Course succesfully uploaded.", courseId:uploadData._id };
+            return { success: true, message: "Course succesfully uploaded.", courseId:uploadData._id, courseTitle:uploadData.courseTitle, thumbnail:uploadData.thumbnail };
         } catch (error) {
             console.error('An unknown error occurred:', error);
             return { success: false, message: 'Course upload failed:  error' };
@@ -176,7 +177,7 @@ export class CourseService implements ICourseUseCase {
     async fetchCourse(): Promise<FetchCourseResponseDTO> {
         try {
             console.log('trig fetchCourse')
-            const fetchCourse: IPlainCourse[] = await repository.getCourses();
+            const fetchCourse: IPlainCourse[] = await repository.getCoursesWithFilter();
 
             return {
                 success: true,
@@ -208,7 +209,7 @@ export class CourseService implements ICourseUseCase {
             const courseDetails = await repository.findCourseById(data.id);
             console.log(courseDetails, 'Course details from service');
 
-            if (!courseDetails) {
+            if (!courseDetails?._id) {
                 return { courseDetails: undefined, message: 'Course not found' };
             }
             const reviewData = await reviewRepository.fetchReviewsByCourseId(courseDetails._id);

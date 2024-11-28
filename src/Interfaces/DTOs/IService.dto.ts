@@ -55,6 +55,8 @@ export interface UploadVideoDTO {
     success: boolean;
     message: string;
     courseId?:string;
+    courseTitle?:string;
+    thumbnail?:string;
   }
   
   // DTO for fetching courses
@@ -81,7 +83,7 @@ export interface UploadVideoDTO {
   }
   
   export interface FetchCourseDetailsResponseDTO {
-    courseDetails: ICourse | undefined; // Assuming course detail is any for now; it should be a specific type
+    courseDetails: IPlainCourse | undefined; // Assuming course detail is any for now; it should be a specific type
     reviewData?:IReview[] | any
     message?:string;
   }

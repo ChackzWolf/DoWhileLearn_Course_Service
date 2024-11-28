@@ -180,15 +180,12 @@ message TestCase {
 
 
 
-
-
-
-
-
 message SubmitCourseResponse {
   string message = 1;
   bool success = 2;
   string courseId = 3;
+  string courseTitle = 4;
+  string thumbnail = 5;
 }
 
 message ReviewData {

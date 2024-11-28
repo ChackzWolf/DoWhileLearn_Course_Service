@@ -125,8 +125,8 @@ export class courseController implements ICourseController {
             const response = await courseService.uploadImage(data);
             callback(null, response);
         } catch (error) {
-            callback(error as ServiceError);
-        }
+            callback(error as ServiceError); 
+        } 
     }
 
     async uploadCourse(
@@ -140,7 +140,7 @@ export class courseController implements ICourseController {
 
             console.log(JSON.stringify(data, null, 2));
             const response = await courseService.uploadCourse(courseData);
-            console.log(response, "response");
+            console.log(response, "response upload course");
             callback(null, response);
         } catch (error) {
             callback(error as ServiceError);
@@ -162,7 +162,7 @@ export class courseController implements ICourseController {
     }
 
 
-    async fetchCourse(
+    async fetchCourse( 
         _call: ServerUnaryCall<null, ResponseFetchCourseList>,
         callback: sendUnaryData<ResponseFetchCourseList>
     ): Promise<void> {
