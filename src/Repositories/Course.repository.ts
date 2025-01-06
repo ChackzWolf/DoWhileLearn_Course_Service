@@ -158,46 +158,45 @@ export default class CourseRepository implements ICourseRepository {
     try {
       // Convert courseIds to an array of ObjectId
       const objectIds = courseIds.map(id => new mongoose.Types.ObjectId(id));
-
-      // Query the CourseModel to fetch courses with matching IDs
-      const courses = await Course.find({ _id: { $in: objectIds } });
-
+  
+      // Build the aggregation pipeline
+      const pipeline = [
+        {
+          $match: { _id: { $in: objectIds } }, // Match courses by IDs
+        },
+        {
+          $lookup: {
+            from: "reviews", // Collection name for reviews
+            localField: "_id", // Local field in the courses collection
+            foreignField: "courseId", // Foreign field in the reviews collection
+            as: "reviews", // Output array field
+          },
+        },
+        {
+          $addFields: {
+            averageRating: { $avg: "$reviews.rating" }, // Calculate average rating
+            ratingCount: { $size: "$reviews" }, // Count the number of reviews
+          },
+        },
+        {
+          $project: {
+            reviews: 0, // Exclude reviews array from the result
+          },
+        },
+      ];
+  
+      // Execute the aggregation pipeline
+      const courses = await Course.aggregate(pipeline).exec();
+  
+      console.log(courses, "courses from repository");
       if (!courses || courses.length === 0) {
         throw new Error("No courses found with the provided IDs.");
       }
-
-      // Format the fetched courses similar to fetchTutorCourses
-      // const formattedCourses: ResponseFetchCourseList = {
-      //   courses: courses.map((course: ICourse) => ({
-      //     _id: String(course._id), // Ensure _id is a string
-      //     courseCategory: course.courseCategory,
-      //     courseDescription: course.courseDescription,
-      //     courseLevel: course.courseLevel,
-      //     coursePrice: course.coursePrice,
-      //     courseTitle: course.courseTitle,
-      //     demoURL: course.demoURL,
-      //     discountPrice: course.discountPrice,
-      //     thumbnail: course.thumbnail,
-      //     benefits_prerequisites: {
-      //       benefits: course.benefits_prerequisites?.benefits || [],
-      //       prerequisites: course.benefits_prerequisites?.prerequisites || [],
-      //     },
-      //     Modules: course.Modules.map((module: any) => ({
-      //       name: module.name,
-      //       description: module.description,
-      //       lessons: module.lessons.map((lesson: any) => ({
-      //         title: lesson.title,
-      //         video: lesson.video,
-      //         description: lesson.description,
-      //       })),
-      //     })),
-      //   })),
-      // };
-
-      // return formattedCourses;
+  
+      return courses;
     } catch (error) {
       console.error("Error fetching courses:", error);
-      throw new Error("Failed to fetch courses: "); // Provide more context in the error
+      throw new Error("Failed to fetch courses.");
     }
   }
 
@@ -215,6 +214,11 @@ export default class CourseRepository implements ICourseRepository {
 
   async getCoursesWithFilter(filters: any = {}): Promise<IPlainCourse[]> {
     console.log('reached getCoursewithFilter', filters)
+    
+    const { category, priceOrder, ratingOrder } = filters;
+    const matchStage: any = {};
+    if (category) matchStage.category = category;
+
     const pipeline = [
       { $match: filters },
       {
@@ -226,26 +230,94 @@ export default class CourseRepository implements ICourseRepository {
         },
       },
       {
-        $addFields: {
+        $addFields: { 
           averageRating: { $avg: "$reviews.rating" },
           ratingCount: { $size: "$reviews" },
         },
       },
-      {
+      { 
         $project: {
           reviews: 0, 
         },
       },
     ] as any[];
   
+
+
+    const sortStage: any = {};
+    if (priceOrder === "low") sortStage.price = 1;
+    if (priceOrder === "high") sortStage.price = -1;
+    if (ratingOrder === "low") sortStage.averageRating = 1;
+    if (ratingOrder === "high") sortStage.averageRating = -1;
+
+    if (Object.keys(sortStage).length > 0) {
+        pipeline.push({ $sort: sortStage });
+    }
     const fetchCourses = await Course.aggregate(pipeline).exec();
-  
     console.log(fetchCourses, 'fetch courses with average rating');
   
 
     return fetchCourses as IPlainCourse[];
   }
 
+
+  async getCoursesWithBasicFilter(filters: any = {}): Promise<IPlainCourse[]> {
+    console.log('reached getCoursewithFilter', filters);
+  
+    // Destructure filters
+    const { category, priceOrder, ratingOrder } = filters;
+  
+    // Dynamic match stage
+    const matchStage: any = {};
+    if (category) matchStage.courseCategory = category;
+  console.log(matchStage)
+    // Base pipeline
+    const pipeline = [
+      { $match: matchStage }, // Use dynamically created matchStage here
+      {
+        $lookup: {
+          from: "reviews",
+          localField: "_id",
+          foreignField: "courseId",
+          as: "reviews",
+        },
+      },
+      {
+        $addFields: {
+          averageRating: { $avg: "$reviews.rating" },
+          ratingCount: { $size: "$reviews" },
+          finalPrice: {
+            $ifNull: ["$discountPrice", "$coursePrice"], // If discountPrice exists, use it, else fallback to coursePrice
+          },
+        },
+      },
+      {
+        $project: {
+          reviews: 0, // Exclude reviews from output
+        },
+      },
+    ] as any[];
+  
+    // Dynamic sort stage
+    const sortStage: any = {};
+    if (priceOrder === "low") sortStage.finalPrice = 1;
+    if (priceOrder === "high") sortStage.finalPrice = -1;
+    if (ratingOrder === "low") sortStage.averageRating = -1;
+    if (ratingOrder === "high") sortStage.averageRating = 1;
+    console.log(sortStage,'sort stage')
+    // Add sort stage only if sorting is specified
+    if (Object.keys(sortStage).length > 0) {
+      pipeline.push({ $sort: sortStage });
+    }
+  
+    // Execute the aggregation pipeline
+    const fetchCourses = await Course.aggregate(pipeline).exec();
+  
+    console.log(fetchCourses, 'fetch courses with average rating');
+  
+    return fetchCourses as IPlainCourse[];
+  }
+  
 
 
 

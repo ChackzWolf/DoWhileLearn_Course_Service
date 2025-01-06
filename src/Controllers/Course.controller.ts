@@ -19,6 +19,7 @@ import {
     AddPurchasedUsersRequest,
     AddPurchasedUsersResponse,
     RequestGetCoursesByIds,
+    FetchCourseRequestFilter,
 } from "../Interfaces/DTOs/IController.dto";
 import { ICourseController } from "../Interfaces/IControllers/IController.interface";
 import { StatusCode } from "../Interfaces/Enums/enums";
@@ -163,11 +164,13 @@ export class courseController implements ICourseController {
 
 
     async fetchCourse( 
-        _call: ServerUnaryCall<null, ResponseFetchCourseList>,
+        call: ServerUnaryCall<FetchCourseRequestFilter, ResponseFetchCourseList>,
         callback: sendUnaryData<ResponseFetchCourseList>
     ): Promise<void> {
         try {
-            const response = await courseService.fetchCourse();
+            const data = call.request;
+            console.log(data, 'from controller')
+            const response = await courseService.fetchCourse(data);
             if (response.success && response.courses) {
                 callback(null, {
                     courses: response.courses,
@@ -199,7 +202,7 @@ export class courseController implements ICourseController {
         call: ServerUnaryCall<RequestFetchTutorCourse, ResponseFetchCourseList>,
         callback: sendUnaryData<ResponseFetchCourseList>
     ): Promise<void> {
-        console.log("Fetching tutor courses...");
+        console.log("Fetching tutor courses...", call.request);
 
         const data = call.request;
         try {

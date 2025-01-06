@@ -19,6 +19,7 @@ import {
     AddToPurchasedListResponseDTO,
     GetCoursesByIdsDTO,
     GetCoursesByIdsResponseDTO,
+    FetchCourseRequestFilter,
 } from '../Interfaces/DTOs/IService.dto'
 import { ResponseFetchCourseList } from "../Interfaces/DTOs/IRepository.dto";
 dotenv.config();
@@ -174,10 +175,15 @@ export class CourseService implements ICourseUseCase {
         }
     }
  
-    async fetchCourse(): Promise<FetchCourseResponseDTO> {
+    async fetchCourse(data:FetchCourseRequestFilter): Promise<FetchCourseResponseDTO> {
         try {
+            const filters = {
+                category: data.category || null,
+                priceOrder: data.priceOrder || null,
+                ratingOrder: data.ratingOrder || null,
+              };
             console.log('trig fetchCourse')
-            const fetchCourse: IPlainCourse[] = await repository.getCoursesWithFilter();
+            const fetchCourse: IPlainCourse[] = await repository.getCoursesWithBasicFilter(filters);
 
             return {
                 success: true,
@@ -272,11 +278,11 @@ export class CourseService implements ICourseUseCase {
         try {
             console.log(data, 'data from useCase');
             const courses = await repository.getCoursesByIds(data.courseIds);
-            console.log(courses);
+            console.log(courses, 'fetch courses');
 
             return {
                 success: true,
-                courses: courses.courses, // Ensure this is correctly typed
+                courses: courses, // Ensure this is correctly typed
             };
         } catch (error) {
             console.error("Error in getCoursesByIds service:", error);

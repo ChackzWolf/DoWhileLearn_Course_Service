@@ -59,7 +59,14 @@ export interface UploadVideoDTO {
     thumbnail?:string;
   }
   
+  
   // DTO for fetching courses
+
+  export interface FetchCourseRequestFilter {
+    category:string;
+    priceOrder:string;
+    ratingOrder:string;
+  }
   export interface FetchCourseResponseDTO {
     success: boolean;
     courses?: IPlainCourse[] | undefined; // Use `ICourse[]` directly here if you're expecting the full array of courses

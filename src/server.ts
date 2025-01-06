@@ -57,7 +57,8 @@ const packageDefinition = protoLoader.loadSync(
 const courseProto = grpc.loadPackageDefinition(packageDefinition) as any;
 
 const server = new grpc.Server({
-    'grpc.max_receive_message_length': 1 * 1024 * 1024 * 1024 // 1 GB
+
+  
 })
 
  
@@ -83,7 +84,6 @@ connectDB()
 
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
 module.exports = router;
 const controller = new courseController()
@@ -98,7 +98,7 @@ server.addService(courseProto.CourseService.service, {
     FetchTutorCourse: controller.fetchTutorCourses,
     FetchCourseDetails: controller.fetchCourseDetails,
     AddPurchasedUsers: controller.addToPurchasedList,
-    GetCourseInCart: controller.getCoursesByIds,
+    GetCourseByIds: controller.getCoursesByIds,
     AddReview:controller.addReview,
     FetchReviewsOfCourse: controller.fetchReviewsOfCourse,
     FetchPurchasedCourses: controller.fetchPurchasedCourses,

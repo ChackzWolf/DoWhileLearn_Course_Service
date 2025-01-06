@@ -23,6 +23,11 @@ export interface GetCourseInCartRequest {
     tutorId: string;
   }
   
+  export interface FetchCourseRequestFilter {
+    category:string;
+    priceOrder:string;
+    ratingOrder:string;
+  }
   export interface ResponseFetchCourseList {
     courses: IPlainCourse[] | undefined;
   }
