@@ -1,4 +1,3 @@
-import { CourseService } from "../Services/Course.services";
 import {
     ServerUnaryCall,
     sendUnaryData,
@@ -27,8 +26,9 @@ import { kafkaConfig } from "../Configs/Kafka.configs/Kafka.configs";
 import { KafkaMessage } from 'kafkajs';
 import { IReview } from "../Interfaces/Models/IReview";
 import { restructureSubmitCourse } from "../Utils/Restructure.utils";
+import { ICourseService } from "../Interfaces/IServices/IService.interfaces";
+import { kafka_Const } from "../Configs/Kafka.configs/Topic.config";
 
-const courseService = new CourseService();
 
 export interface OrderEventData {
     userId: string;
@@ -48,16 +48,22 @@ export interface OrderEventData {
 
 
 
-export class courseController implements ICourseController {
+export class CourseController implements ICourseController {
+
+    private courseService : ICourseService
+
+    constructor(courseService: ICourseService){
+        this.courseService = courseService
+    }
 
     async start(): Promise<void> {
         const topics = [
-            'course.update',
-            'course-service.rollback'
+            kafka_Const.topics.COURSE_UPDATE,
+            kafka_Const.topics.COURSE_ROLLBACK,
         ]
 
         await kafkaConfig.consumeMessages(
-            'course-service-group',
+            kafka_Const.COURSE_SERVICE_GROUP_NAME,
             topics,
             this.routeMessage.bind(this)
         );
@@ -66,10 +72,10 @@ export class courseController implements ICourseController {
     async routeMessage(topics: string[], message: KafkaMessage, topic: string): Promise<void> {
         try {
             switch (topic) {
-                case 'course.update':
+                case kafka_Const.topics.COURSE_UPDATE:
                     await this.handleMessage(message);
                     break;
-                case 'course-service.rollback':
+                case kafka_Const.topics.COURSE_ROLLBACK:
                     await this.handleRollback(message);
                     break;
                 default:
@@ -85,7 +91,7 @@ export class courseController implements ICourseController {
         try {
             const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');
             console.log('START', paymentEvent, 'MESAGe haaha')  
-            await courseService.handleOrderSuccess(paymentEvent);
+            await this.courseService.handleOrderSuccess(paymentEvent);
         } catch (error) {
             console.error('Error processing message:', error);
         }
@@ -94,7 +100,7 @@ export class courseController implements ICourseController {
         try {
             const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');
             console.log(' Role back started ', paymentEvent, 'MESAGe haaha')
-            await courseService.handleOrderTransactionFail(paymentEvent)
+            await this.courseService.handleOrderTransactionFail(paymentEvent)
         } catch (error) {
             console.error('Error processing message:', error);
         }
@@ -110,7 +116,7 @@ export class courseController implements ICourseController {
             console.log(call.request.videoBinary, " call from controller");
 
             const data = call.request;
-            const response = await courseService.uploadVideo(data);
+            const response = await this.courseService.uploadVideo(data);
             console.log("giving response", response);
             callback(null, response);
         } catch (err) {
@@ -123,7 +129,7 @@ export class courseController implements ICourseController {
     ): Promise<void> {
         try {
             const data = call.request;
-            const response = await courseService.uploadImage(data);
+            const response = await this.courseService.uploadImage(data);
             callback(null, response);
         } catch (error) {
             callback(error as ServiceError); 
@@ -140,7 +146,7 @@ export class courseController implements ICourseController {
             console.log(data, "data fro mcntorller");
 
             console.log(JSON.stringify(data, null, 2));
-            const response = await courseService.uploadCourse(courseData);
+            const response = await this.courseService.uploadCourse(courseData);
             console.log(response, "response upload course");
             callback(null, response);
         } catch (error) {
@@ -157,7 +163,7 @@ export class courseController implements ICourseController {
         console.log(JSON.stringify(data, null, 2));
         const courseId = data.courseId;
         const courseData = restructureSubmitCourse(data);
-        const response = await courseService.updateCourse(courseData,courseId);
+        const response = await this.courseService.updateCourse(courseData,courseId);
         console.log(response, "response from controller");
         callback(null, response);
     }
@@ -170,7 +176,7 @@ export class courseController implements ICourseController {
         try {
             const data = call.request;
             console.log(data, 'from controller')
-            const response = await courseService.fetchCourse(data);
+            const response = await this.courseService.fetchCourse(data);
             if (response.success && response.courses) {
                 callback(null, {
                     courses: response.courses,
@@ -206,7 +212,7 @@ export class courseController implements ICourseController {
 
         const data = call.request;
         try {
-            const response = await courseService.fetchTutorCourses(data);
+            const response = await this.courseService.fetchTutorCourses(data);
 
             if (!response.success) { 
                 callback(
@@ -240,7 +246,7 @@ export class courseController implements ICourseController {
 
         const data = call.request;
         try {
-            const response = await courseService.fetchPurchasedCourses(data);
+            const response = await this.courseService.fetchPurchasedCourses(data);
             console.log(response, 'purchased courses from controller')
             if (!response.success) { 
                 callback(
@@ -277,7 +283,7 @@ export class courseController implements ICourseController {
         console.log(data, "Data received in controller");
 
         try {
-            const response = await courseService.fetchCourseDetails(data);
+            const response = await this.courseService.fetchCourseDetails(data);
             console.log(response, "Response from service");
             console.log(JSON.stringify(response.courseDetails, null, 2))
             if (response.courseDetails) {
@@ -302,7 +308,7 @@ export class courseController implements ICourseController {
     ):Promise<void>{
         try {
             const data = call.request;
-            const response = await courseService.deleteCourse(data);
+            const response = await this.courseService.deleteCourse(data);
             callback(null, response);
         } catch (error) {
             console.error("Error delete course :", error);
@@ -323,7 +329,7 @@ export class courseController implements ICourseController {
     ): Promise<void> {
         try {
             const data = call.request;
-            const response = await courseService.addToPurchasedList(data);
+            const response = await this.courseService.addToPurchasedList(data);
 
             // Ensure the response is properly formatted as AddPurchasedUsersResponse
             callback(null, {
@@ -348,7 +354,7 @@ export class courseController implements ICourseController {
             console.log("Triggering getCoursesByIds controller");
             const data = call.request;
 
-            const response = await courseService.getCoursesByIds(data);
+            const response = await this.courseService.getCoursesByIds(data);
 
             console.log(response, "Response from service");
 
@@ -373,7 +379,7 @@ export class courseController implements ICourseController {
         try {
             console.log('Triggerd add review', call.request);
             const data = call.request;
-            const response = await courseService.addReview(data)
+            const response = await this.courseService.addReview(data)
             callback(null, response); 
         } catch (error) {
             console.error("Error in  controller adding review:", error);
@@ -388,11 +394,18 @@ export class courseController implements ICourseController {
         try {
             console.log(call.request,'nagaram nagaram');
             const data = call.request;
-            const response = await courseService.fetchReviewByCourseId(data);
+            const response = await this.courseService.fetchReviewByCourseId(data);
             console.log(response, 'reseponse of fetch review');
             callback(null,response);
         } catch (error) {
-            
+            callback(error as ServiceError);
         }
+    }
+
+
+    
+    test(_call: ServerUnaryCall<null, {success:boolean}>, callback: sendUnaryData<{success:boolean}>): void {
+        console.log('test')
+        callback(null, {success:true})
     }
 }

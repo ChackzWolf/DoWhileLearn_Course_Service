@@ -1,24 +1,27 @@
 // courseService.js
 const express = require('express');
-const multer = require('multer');
 import dotenv from "dotenv";
 import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import path from "path";
-import { courseController } from "./Controllers/Course.controller";
+import { CourseController } from "./Controllers/Course.controller";
 import { connectDB } from "./Configs/DB.configs/mongoDB";
 import morgan from 'morgan';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import fs from 'fs'
 import { configs } from "./Configs/ENV_configs/ENV.configs";
+import { CourseService } from "./Services/Course.services";
+import ReviewRepository from "./Repositories/Review.repository";
+import CourseRepository from "./Repositories/Course.repository";
+import { AwsUploader } from "./Configs/S3/s3";
 
 const app = express();
 
 
 // error log
 const logger = winston.createLogger({
-    level: 'info',
+    level: 'info', 
     format: winston.format.combine(
       winston.format.timestamp(),
       winston.format.json()
@@ -31,7 +34,7 @@ const logger = winston.createLogger({
         maxFiles: configs.LOG_RETENTION_DAYS // Keep logs for 14 days
       })
     ],
-  });
+  }); 
   app.use(morgan('combined', {
     stream: {
       write: (message) => logger.info(message.trim())
@@ -50,7 +53,7 @@ dotenv.config()
 
 
 const packageDefinition = protoLoader.loadSync(
-    path.join(__dirname, "Protos/course.proto"),
+    path.join(__dirname, "protos/course.proto"),
     {keepCase:true , longs: String, enums: String , defaults: true, oneofs: true}
 )
 
@@ -84,32 +87,38 @@ connectDB()
 
 
 const router = express.Router();
+module.exports = router;  
 
-module.exports = router;
-const controller = new courseController()
+
+const awsUploader = new AwsUploader();
+const reviewRepository = new ReviewRepository(); 
+const courseRepository = new CourseRepository();
+const courseService = new CourseService(courseRepository,reviewRepository,awsUploader);
+const courseController = new CourseController(courseService)
 
 server.addService(courseProto.CourseService.service, {
-    UploadVideo: controller.uploadVideo,
-    UploadImage: controller.uploadImage,
-    SubmitCourse: controller.uploadCourse,
-    EditCourse: controller.editCourse,
-    DeleteCourse: controller.deleteCourse,
-    FetchCourse: controller.fetchCourse,
-    FetchTutorCourse: controller.fetchTutorCourses,
-    FetchCourseDetails: controller.fetchCourseDetails,
-    AddPurchasedUsers: controller.addToPurchasedList,
-    GetCourseByIds: controller.getCoursesByIds,
-    AddReview:controller.addReview,
-    FetchReviewsOfCourse: controller.fetchReviewsOfCourse,
-    FetchPurchasedCourses: controller.fetchPurchasedCourses,
+  AddReview:courseController.addReview.bind(courseController),
+    EditCourse: courseController.editCourse.bind(courseController),
+    UploadImage: courseController.uploadImage.bind(courseController),
+    UploadVideo: courseController.uploadVideo.bind(courseController),
+    FetchCourse: courseController.fetchCourse.bind(courseController),  
+    DeleteCourse: courseController.deleteCourse.bind(courseController),
+    SubmitCourse: courseController.uploadCourse.bind(courseController), 
+    GetCourseByIds: courseController.getCoursesByIds.bind(courseController),
+    FetchTutorCourse: courseController.fetchTutorCourses.bind(courseController), 
+    AddPurchasedUsers: courseController.addToPurchasedList.bind(courseController),
+    FetchCourseDetails: courseController.fetchCourseDetails.bind(courseController),
+    FetchReviewsOfCourse: courseController.fetchReviewsOfCourse.bind(courseController),
+    FetchPurchasedCourses: courseController.fetchPurchasedCourses.bind(courseController),
+    Test: courseController.test.bind(courseController),
 })
 
 // Start Kafka consumer
-controller.start()
+courseController.start()
   .catch(error => console.error('Failed to start kafka course service:', error));
-
-const PORT = configs.PORT; 
+ 
+const PORT = configs.PORT;  
 app.listen(PORT, () => {
   console.log(`Course service running on port ${PORT}`);
-});
+}); 
  

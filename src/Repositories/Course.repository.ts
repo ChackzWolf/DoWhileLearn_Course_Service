@@ -1,5 +1,5 @@
 import { Course } from "../Schemas/Course.schema";
-import { ICourseRepository } from "../Interfaces/IRepositories/IRepository.interface"; // Adjust import path as necessary
+import { ICourseRepository } from "../Interfaces/IRepositories/ICourseRepository.interface"; // Adjust import path as necessary
 import mongoose from 'mongoose';
 import { ICourse, IPlainCourse } from "../Interfaces/Models/ICourse";
 import { UpdateCourseDTO, AddToPurchaseListResponse, ResponseFetchCourseList } from "../Interfaces/DTOs/IRepository.dto";
@@ -212,7 +212,7 @@ export default class CourseRepository implements ICourseRepository {
 
 
 
-  async getCoursesWithFilter(filters: any = {}): Promise<IPlainCourse[]> {
+  async getCoursesWithFilter(filters: any): Promise<IPlainCourse[]> {
     console.log('reached getCoursewithFilter', filters)
     
     const { category, priceOrder, ratingOrder } = filters;
@@ -261,7 +261,7 @@ export default class CourseRepository implements ICourseRepository {
   }
 
 
-  async getCoursesWithBasicFilter(filters: any = {}): Promise<IPlainCourse[]> {
+  async getCoursesWithBasicFilter(filters: any ): Promise<IPlainCourse[]> {
     console.log('reached getCoursewithFilter', filters);
   
     // Destructure filters

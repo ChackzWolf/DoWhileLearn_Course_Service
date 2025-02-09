@@ -1,7 +1,5 @@
-import { uploadFile, uploadImage } from "../Configs/S3/s3";
 import dotenv from "dotenv";
-import CourseRepository from '../Repositories/Course.repository'
-import { ICourseUseCase } from "../Interfaces/IServices/IService.interfaces";
+import { ICourseService } from "../Interfaces/IServices/IService.interfaces";
 import { StatusCode } from "../Interfaces/Enums/enums";
 import {
     UploadVideoDTO,
@@ -21,7 +19,6 @@ import {
     GetCoursesByIdsResponseDTO,
     FetchCourseRequestFilter,
 } from '../Interfaces/DTOs/IService.dto'
-import { ResponseFetchCourseList } from "../Interfaces/DTOs/IRepository.dto";
 dotenv.config();
 import { kafkaConfig } from "../Configs/Kafka.configs/Kafka.configs";
 import ReviewRepository from "../Repositories/Review.repository";
@@ -29,6 +26,10 @@ import { IReview } from "../Interfaces/Models/IReview";
 import { error } from "console";
 import { IPlainCourse } from "../Interfaces/Models/ICourse";
 import mongoose from "mongoose";
+import { ICourseRepository } from "../Interfaces/IRepositories/ICourseRepository.interface";
+import { IReviewRepository } from "../Interfaces/IRepositories/IReviewRepository.interface";
+import {IAwsUploader} from "../Interfaces/Configs/IAwsUploader";
+import { kafka_Const } from "../Configs/Kafka.configs/Topic.config";
 
 // types/events.ts
 export interface OrderEvent {
@@ -38,10 +39,10 @@ export interface OrderEvent {
     tutorId: string;
     status: string;
     timestamp: Date;
-  }
+}
   
-  // types/events.ts
-  export interface OrderEventData {
+// types/events.ts
+export interface OrderEventData {
     userId: string;
     tutorId: string;
     courseId: string;
@@ -54,17 +55,24 @@ export interface OrderEvent {
     paymentStatus:boolean;
     timestamp: Date;
     status: string;
-  }
+}
 
-const repository = new CourseRepository()
-const reviewRepository = new ReviewRepository()
 
-export class CourseService implements ICourseUseCase {
+export class CourseService implements ICourseService {
+    private awsUploader: IAwsUploader;
+    private courseRepository: ICourseRepository;
+    private reviewRepository: IReviewRepository;
+    
+    constructor(courseRepository: ICourseRepository, reviewRepository: IReviewRepository, awsUploader: IAwsUploader) {
+        this.courseRepository = courseRepository;
+        this.reviewRepository = reviewRepository;
+        this.awsUploader = awsUploader;
+    }
 
     async handleOrderSuccess(paymentEvent: OrderEventData): Promise<void> {
         try {
             const { courseId, userId} = paymentEvent;
-            const result = await repository.addToPurchaseList(courseId, userId);
+            const result = await this.courseRepository.addToPurchaseList(courseId, userId);
             if(!result.success){
                 throw new Error("Error occured in updating, success is false.")
             }
@@ -85,14 +93,14 @@ export class CourseService implements ICourseUseCase {
         } 
     }
   
-    async handleOrderTransactionFail(failedTransactionEvent:OrderEventData){
+    async handleOrderTransactionFail(failedTransactionEvent:OrderEventData):Promise<void>{
         try {
             const {courseId, userId}  = failedTransactionEvent;
-            const updated = await repository.removeFromPurchaseList( courseId, userId );
+            const updated = await this.courseRepository.removeFromPurchaseList( courseId, userId );
             if(!updated?.success){
                 throw new Error("Error in rollbacking")
             }
-            await kafkaConfig.sendMessage('rollback-completed', {
+            await kafkaConfig.sendMessage(kafka_Const.topics.COURSE_ROLLBACK_COMPLETED, {
                 transactionId: failedTransactionEvent.transactionId,
                 service: 'course-service'
               });
@@ -101,15 +109,11 @@ export class CourseService implements ICourseUseCase {
         }
     }
 
-
-
-
-
     async uploadVideo(data: UploadVideoDTO): Promise<UploadVideoResponseDTO> {
         try {
             console.log(data, 'dataaa');
             console.log(Buffer.byteLength(data.videoBinary), 'Video size in bytes');
-            const result = await uploadFile(data.videoBinary)
+            const result = await this.awsUploader.uploadVideo(data.videoBinary)
             console.log('File uploaded successfully:', result);
             return { message: "File has been uploaded successfully", success: true, s3Url: result.publicUrl }
         } catch (error: unknown) {
@@ -125,7 +129,7 @@ export class CourseService implements ICourseUseCase {
 
     async uploadImage(data: UploadImageDTO): Promise<UploadImageResponseDTO> {
         try {
-            const response = await uploadImage(data.imageBinary, data.imageName)
+            const response = await this.awsUploader.uploadImage(data.imageBinary, data.imageName)
             return { message: "Image uploaded successfully.", s3Url: response.publicUrl, success: true };
         } catch (error) {
             if (error instanceof Error) {
@@ -141,7 +145,7 @@ export class CourseService implements ICourseUseCase {
     async uploadCourse(courseData: IPlainCourse): Promise<UploadCourseResponseDTO> {
         try {
             console.log(courseData, 'data form service')
-            const uploadData = await repository.createCourse(courseData);
+            const uploadData = await this.courseRepository.createCourse(courseData);
             console.log(uploadData, 'uploaded data ');
             return { success: true, message: "Course succesfully uploaded.", courseId:uploadData._id, courseTitle:uploadData.courseTitle, thumbnail:uploadData.thumbnail };
         } catch (error) {
@@ -153,7 +157,7 @@ export class CourseService implements ICourseUseCase {
     async updateCourse(courseData: IPlainCourse,courseId:string): Promise<UploadCourseResponseDTO> {
         try {
             console.log(courseData, 'data to update form service')
-            const uploadData = await repository.updateCourse(courseId,courseData);
+            const uploadData = await this.courseRepository.updateCourse(courseId,courseData);
             console.log(uploadData, 'uploaded data ');
             return { success: true, message: "Course succesfully updated." }
         } catch (error) {
@@ -165,7 +169,7 @@ export class CourseService implements ICourseUseCase {
     async deleteCourse(data:{courseId:string}): Promise<any> {
         try {
             const {courseId} = data;
-            const deleteCourse = await repository.deleteCourseById(courseId);
+            const deleteCourse = await this.courseRepository.deleteCourseById(courseId);
             if(!deleteCourse){
                 return {success:false, status:StatusCode.Conflict};
             }
@@ -183,7 +187,7 @@ export class CourseService implements ICourseUseCase {
                 ratingOrder: data.ratingOrder || null,
               };
             console.log('trig fetchCourse')
-            const fetchCourse: IPlainCourse[] = await repository.getCoursesWithBasicFilter(filters);
+            const fetchCourse: IPlainCourse[] = await this.courseRepository.getCoursesWithBasicFilter(filters);
 
             return {
                 success: true,
@@ -200,7 +204,7 @@ export class CourseService implements ICourseUseCase {
 
     async fetchTutorCourses(data: FetchTutorCoursesDTO): Promise<FetchTutorCoursesResponseDTO> {
         try {
-            const courses = await repository.getCoursesWithFilter({tutorId:data.tutorId});
+            const courses = await this.courseRepository.getCoursesWithFilter({tutorId:data.tutorId});
             return {
                 success: true,
                 courses: courses,  // Ensure the response matches the ResponseFetchCourseList structure
@@ -212,13 +216,13 @@ export class CourseService implements ICourseUseCase {
     }
     async fetchCourseDetails(data: FetchCourseDetailsDTO): Promise<FetchCourseDetailsResponseDTO> {
         try {
-            const courseDetails = await repository.findCourseById(data.id);
+            const courseDetails = await this.courseRepository.findCourseById(data.id);
             console.log(courseDetails, 'Course details from service');
 
             if (!courseDetails?._id) {
                 return { courseDetails: undefined, message: 'Course not found' };
             }
-            const reviewData = await reviewRepository.fetchReviewsByCourseId(courseDetails._id);
+            const reviewData = await this.reviewRepository.fetchReviewsByCourseId(courseDetails._id);
 
             return { courseDetails, reviewData }; // Return the found course details
         } catch (error) {
@@ -230,7 +234,7 @@ export class CourseService implements ICourseUseCase {
     async addToPurchasedList(data: AddToPurchasedListDTO): Promise<AddToPurchasedListResponseDTO> {
         try {
             console.log(data);
-            const response = await repository.addToPurchaseList(data.userId, data.courseId);
+            const response = await this.courseRepository.addToPurchaseList(data.userId, data.courseId);
             console.log(response);
 
             return {
@@ -250,7 +254,7 @@ export class CourseService implements ICourseUseCase {
 
     async addReview(data:IReview):Promise<{success:boolean, status:number, message:string}>{
         try {
-            const createdReview = await reviewRepository.addReview(data);
+            const createdReview = await this.reviewRepository.addReview(data);
             if(!createdReview){
                 return {success:false, status:StatusCode.NotFound, message:"Failed to add review."};
             } 
@@ -264,7 +268,7 @@ export class CourseService implements ICourseUseCase {
     async fetchReviewByCourseId(data:{courseId:string}):Promise<{ success:boolean, status:number, reviewData:IReview[] | undefined }>{
         try {
             const courseId = data.courseId;
-            const reviews = await reviewRepository.fetchReviewsByCourseId(courseId);
+            const reviews = await this.reviewRepository.fetchReviewsByCourseId(courseId);
             if(!reviews){
                 throw error;
             }
@@ -277,7 +281,7 @@ export class CourseService implements ICourseUseCase {
     async getCoursesByIds(data: GetCoursesByIdsDTO): Promise<GetCoursesByIdsResponseDTO> {
         try {
             console.log(data, 'data from useCase');
-            const courses = await repository.getCoursesByIds(data.courseIds);
+            const courses = await this.courseRepository.getCoursesByIds(data.courseIds);
             console.log(courses, 'fetch courses');
 
             return {
@@ -293,11 +297,11 @@ export class CourseService implements ICourseUseCase {
         }
     }
 
-    async fetchPurchasedCourses(data:{userId:string}){
+    async fetchPurchasedCourses(data:{userId:string}):Promise<{success:boolean, courses?:IPlainCourse[] | undefined, message?:string}>{
         try {
             console.log(data, 'dta from service');
             const userObjectId = new mongoose.Types.ObjectId(data.userId);
-            const courses = await repository.getCoursesWithFilter({purchasedUsers: { $in: [userObjectId] }})
+            const courses = await this.courseRepository.getCoursesWithFilter({purchasedUsers: { $in: [userObjectId] }})
             return {success:true, courses};
         } catch (error) {
             console.error("Error in fetch purchased course service:", error);

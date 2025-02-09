@@ -1,8 +1,9 @@
 import Review from "../Schemas/Review.schema";
 import { IReview } from "../Interfaces/Models/IReview";
 import mongoose from "mongoose";
+import { IReviewRepository } from "../Interfaces/IRepositories/IReviewRepository.interface";
 
-export default class ReviewRepository  {
+export default class ReviewRepository implements IReviewRepository  {
     async fetchReviewsByCourseId(courseId: string): Promise<IReview[] | undefined> {
         const courseObjectId = new mongoose.Types.ObjectId(courseId);
         const reviews: IReview[] = await Review.find({ courseId: courseObjectId });
@@ -10,7 +11,7 @@ export default class ReviewRepository  {
         return reviews;
     }
 
-    async addReview(data: IReview) {
+    async addReview(data: IReview):Promise<any>  {
         const dataToAdd = {
             courseId: new mongoose.Types.ObjectId(data.courseId),
             userId: new mongoose.Types.ObjectId(data.userId),
