@@ -46,8 +46,6 @@ export interface OrderEventData {
 }
 
 
-
-
 export class CourseController implements ICourseController {
 
     private courseService : ICourseService
@@ -86,7 +84,6 @@ export class CourseController implements ICourseController {
         }
     }
  
-    // checking order  success or fail
     private async handleMessage(message: KafkaMessage): Promise<void> {
         try {
             const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');

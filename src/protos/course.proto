@@ -14,7 +14,7 @@ service CourseService {
   rpc AddReview(ReviewData) returns (AddReviewResponse);
   rpc FetchReviewsOfCourse(FetchReviewsOfCourseRequest) returns (FetchReviewsOfCourseResponse);
   rpc FetchPurchasedCourses(FetchPurchasedCourseRequest) returns (ResponseFetchCourseList);
-    rpc Test(emptyRequest) returns (TestResponse);
+  rpc Test(emptyRequest) returns (TestResponse);
 }
 
 message emptyRequest{}
@@ -81,7 +81,6 @@ message RequestFetchTutorCourse {
 message ResponseFetchCourseList {
   repeated ResponseFetchCourse courses = 1;
 }
-message emptyRequest {}
 
 message VideoRequest {
   bytes videoBinary = 1; // Video data as binary

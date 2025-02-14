@@ -8,14 +8,14 @@ export class KafkaConfig {
   private static instance: KafkaConfig;
 
   private constructor() {
-    this.kafka = new Kafka({
+    this.kafka = new Kafka({ 
       clientId: 'elearning-service',
       brokers: ['education-kafka.dowhilelearn.svc.cluster.local:29092'],
       retry: {
         maxRetryTime: 60000, // 60 seconds
       
       },
-      connectionTimeout: 10000, // 10 seconds
+      connectionTimeout: 10000, // 10 seconds 
       requestTimeout: 25000, // 25 seconds
     });
   }

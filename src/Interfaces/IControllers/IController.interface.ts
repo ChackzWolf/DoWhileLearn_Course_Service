@@ -16,8 +16,12 @@ SubmitCourseResponse,
 RequestGetCoursesByIds,
 FetchCourseRequestFilter
 } from '../DTOs/IController.dto';
+import { KafkaMessage } from 'kafkajs';
 
 export interface ICourseController {
+    routeMessage(topics: string[], message: KafkaMessage, topic: string): Promise<void>
+
+    
     uploadVideo(call: ServerUnaryCall<VideoRequest, VideoResponse>, callback: sendUnaryData<VideoResponse>): Promise<void>;
     uploadImage(call: ServerUnaryCall<ImageRequest, ImageResponse>, callback: sendUnaryData<ImageResponse>): Promise<void>;
     uploadCourse(call: ServerUnaryCall<SubmitCourseRequest, SubmitCourseResponse>, callback: sendUnaryData<SubmitCourseResponse>): Promise<void>;
