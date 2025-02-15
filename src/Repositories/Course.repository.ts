@@ -189,7 +189,7 @@ export default class CourseRepository implements ICourseRepository {
       const courses = await Course.aggregate(pipeline).exec();
   
       console.log(courses, "courses from repository");
-      if (!courses || courses.length === 0) {
+      if (!courses) {
         throw new Error("No courses found with the provided IDs.");
       }
   
