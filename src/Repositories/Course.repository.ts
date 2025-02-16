@@ -314,7 +314,6 @@ export default class CourseRepository implements ICourseRepository {
     // Execute the aggregation pipeline
     const fetchCourses = await Course.aggregate(pipeline).exec();
   
-    console.log(fetchCourses, 'fetch courses with average rating');
   
     return fetchCourses as IPlainCourse[];
   }

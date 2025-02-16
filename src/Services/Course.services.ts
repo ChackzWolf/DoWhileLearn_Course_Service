@@ -187,7 +187,7 @@ export class CourseService implements ICourseService {
                 ratingOrder: data.ratingOrder || null,
                 search: data.search || null,
               };
-            console.log('trig fetchCourse')
+            console.log('trig fetchCourse', filters);
             const fetchCourse: IPlainCourse[] = await this.courseRepository.getCoursesWithBasicFilter(filters);
 
             return {
