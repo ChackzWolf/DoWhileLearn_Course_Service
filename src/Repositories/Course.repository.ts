@@ -271,12 +271,18 @@ export default class CourseRepository implements ICourseRepository {
     console.log('reached getCoursewithFilter', filters);
   
     // Destructure filters
-    const { category, priceOrder, ratingOrder } = filters;
+    const { category, priceOrder, ratingOrder, search } = filters;
   
     // Dynamic match stage
     const matchStage: any = {};
     if (category) matchStage.courseCategory = category;
-  console.log(matchStage)
+    if (search) {
+      matchStage.$or = [
+          { title: { $regex: search, $options: "i" } },  // Case-insensitive search in title
+          { description: { $regex: search, $options: "i" } },  // Case-insensitive search in description
+      ];
+  }
+    console.log(matchStage)
     // Base pipeline
     const pipeline = [
       { $match: matchStage }, // Use dynamically created matchStage here
