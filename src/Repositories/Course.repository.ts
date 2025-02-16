@@ -215,15 +215,10 @@ export default class CourseRepository implements ICourseRepository {
   async getCoursesWithFilter(filters: any): Promise<IPlainCourse[]> {
     console.log('reached getCoursewithFilter', filters)
     
-    const { category, priceOrder, ratingOrder, search } = filters;
+    const { category, priceOrder, ratingOrder } = filters;
     const matchStage: any = {};
     if (category) matchStage.category = category;
-    if (search) {
-      matchStage.$or = [
-          { title: { $regex: search, $options: "i" } },  // Case-insensitive search in title
-          { description: { $regex: search, $options: "i" } },  // Case-insensitive search in description
-      ];
-  }
+    
 
     const pipeline = [
       { $match: filters },
@@ -271,18 +266,12 @@ export default class CourseRepository implements ICourseRepository {
     console.log('reached getCoursewithFilter', filters);
   
     // Destructure filters
-    const { category, priceOrder, ratingOrder, search } = filters;
+    const { category, priceOrder, ratingOrder } = filters;
   
     // Dynamic match stage
     const matchStage: any = {};
     if (category) matchStage.courseCategory = category;
-    if (search) {
-      matchStage.$or = [
-          { courseTitle: { $regex: search, $options: "i" } },  // Case-insensitive search in title
-          { description: { $regex: search, $options: "i" } },  // Case-insensitive search in description
-      ];
-  }
-    console.log(matchStage)
+  console.log(matchStage)
     // Base pipeline
     const pipeline = [
       { $match: matchStage }, // Use dynamically created matchStage here

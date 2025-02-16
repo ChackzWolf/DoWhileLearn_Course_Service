@@ -77,6 +77,7 @@ export interface UploadVideoDTO {
   // DTO for fetching tutor courses
   export interface FetchTutorCoursesDTO {
     tutorId: string;
+    search: string;
   }
   
   export interface FetchTutorCoursesResponseDTO {

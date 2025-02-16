@@ -21,6 +21,7 @@ export interface GetCourseInCartRequest {
    
   export interface RequestFetchTutorCourse {
     tutorId: string;
+    search: string;
   }
   
   export interface FetchCourseRequestFilter {

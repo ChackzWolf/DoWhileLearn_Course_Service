@@ -77,8 +77,8 @@ message RequestFetchCourseDetails {
 }
 message RequestFetchTutorCourse {
   string tutorId = 1;
+  string search = 2;
 }
-
 message ResponseFetchCourseList {
   repeated ResponseFetchCourse courses = 1;
 }

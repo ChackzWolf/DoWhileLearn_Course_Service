@@ -205,7 +205,11 @@ export class CourseService implements ICourseService {
 
     async fetchTutorCourses(data: FetchTutorCoursesDTO): Promise<FetchTutorCoursesResponseDTO> {
         try {
-            const courses = await this.courseRepository.getCoursesWithFilter({tutorId:data.tutorId});
+            const filter:any = {tutorId:data.tutorId}
+            if (data.search) {
+                filter.courseTitle = { $regex: data.search, $options: 'i' };
+              }
+            const courses = await this.courseRepository.getCoursesWithFilter({filter});
             return {
                 success: true,
                 courses: courses,  // Ensure the response matches the ResponseFetchCourseList structure
