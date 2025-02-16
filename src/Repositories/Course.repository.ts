@@ -278,7 +278,7 @@ export default class CourseRepository implements ICourseRepository {
     if (category) matchStage.courseCategory = category;
     if (search) {
       matchStage.$or = [
-          { title: { $regex: search, $options: "i" } },  // Case-insensitive search in title
+          { courseTitle: { $regex: search, $options: "i" } },  // Case-insensitive search in title
           { description: { $regex: search, $options: "i" } },  // Case-insensitive search in description
       ];
   }
