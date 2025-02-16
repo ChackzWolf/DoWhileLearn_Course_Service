@@ -207,16 +207,16 @@ export class CourseService implements ICourseService {
         try {
             const filter: any = {};
 
-            if (data.tutorId && data.search) {
-                filter.$and = [
-                    { tutorId: data.tutorId },
-                    { courseTitle: { $regex: data.search, $options: "i" } }
-                ];
-            } else if (data.tutorId) {
-                filter.tutorId = data.tutorId;
-            } else if (data.search) {
-                filter.courseTitle = { $regex: data.search, $options: "i" };
-            }
+if (data.tutorId && data.search) {
+    filter.$and = [
+        { tutorId: data.tutorId },
+        { courseTitle: { $regex: data.search, $options: "i" } }
+    ];
+} else if (data.tutorId) {
+    filter.tutorId = data.tutorId;
+} else if (data.search) {
+    filter.courseTitle = { $regex: data.search, $options: "i" };
+}
 
             console.log(filter, 'filter from service');
             const courses = await this.courseRepository.getCoursesWithFilter(filter);
