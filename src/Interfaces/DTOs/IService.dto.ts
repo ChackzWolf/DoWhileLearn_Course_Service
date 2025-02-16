@@ -66,6 +66,7 @@ export interface UploadVideoDTO {
     category:string;
     priceOrder:string;
     ratingOrder:string;
+    search:string;
   }
   export interface FetchCourseResponseDTO {
     success: boolean;

@@ -188,7 +188,7 @@ export default class CourseRepository implements ICourseRepository {
       // Execute the aggregation pipeline
       const courses = await Course.aggregate(pipeline).exec();
   
-      console.log(courses, "courses from repository");
+      console.log(courses, "courses from repository"); 
       if (!courses) {
         throw new Error("No courses found with the provided IDs.");
       }
@@ -215,9 +215,15 @@ export default class CourseRepository implements ICourseRepository {
   async getCoursesWithFilter(filters: any): Promise<IPlainCourse[]> {
     console.log('reached getCoursewithFilter', filters)
     
-    const { category, priceOrder, ratingOrder } = filters;
+    const { category, priceOrder, ratingOrder, search } = filters;
     const matchStage: any = {};
     if (category) matchStage.category = category;
+    if (search) {
+      matchStage.$or = [
+          { title: { $regex: search, $options: "i" } },  // Case-insensitive search in title
+          { description: { $regex: search, $options: "i" } },  // Case-insensitive search in description
+      ];
+  }
 
     const pipeline = [
       { $match: filters },

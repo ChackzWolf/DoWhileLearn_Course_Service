@@ -27,6 +27,7 @@ export interface GetCourseInCartRequest {
     category:string;
     priceOrder:string;
     ratingOrder:string;
+    search: string;
   }
   export interface ResponseFetchCourseList {
     courses: IPlainCourse[] | undefined;
