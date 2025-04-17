@@ -97,7 +97,7 @@ const courseService = new CourseService(courseRepository,reviewRepository,awsUpl
 const courseController = new CourseController(courseService)
 
 server.addService(courseProto.CourseService.service, {
-  AddReview:courseController.addReview.bind(courseController),
+    AddReview:courseController.addReview.bind(courseController),
     EditCourse: courseController.editCourse.bind(courseController),
     UploadImage: courseController.uploadImage.bind(courseController),
     UploadVideo: courseController.uploadVideo.bind(courseController),
